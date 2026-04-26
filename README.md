@@ -66,10 +66,3 @@ python manage.py runserver
 * **Always** activate your `venv` before working.
 * If you install a new package, run `pip freeze > requirements.txt` before committing.
 * **Never** delete the `.env` file or upload it to GitHub.
-
-### Why this README is "Pro-Level":
-1. **Scannability:** It uses code blocks so your friends can just "Copy-Paste" commands.
-2. **Clear Warnings:** It explicitly tells them they need the `.env` and `ca.pem` from you, which prevents them from messaging you at 2 AM asking why the code isn't working.
-3. **Professionalism:** It shows your professor that you understand **Environment Isolation** (using `venv`) and **Secure Configuration** (using `.env`).
-
-**Do you want to add a section on how to use Git branches for the different modules (Users, Transactions, Analytics)?**
