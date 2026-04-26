@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ### 4. Configure Secret Environment Variables
 Since the `.env` file is hidden for security, you must create your own:
 1. Create a new file named `.env` in the root folder.
-2. Ask **Javed** for the database credentials and paste them in:
+2. Ask **Jave** for the database credentials and paste them in:
    ```text
    DB_NAME=defaultdb
    DB_USER=avnadmin
