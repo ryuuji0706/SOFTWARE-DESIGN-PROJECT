@@ -1,0 +1,35 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Analytics Dashboard - CashFlow{% endblock %}
+
+{% block content %}
+    <div class="notifications-section mb-4">
+        {% include 'notifications/alerts.html' %}
+    </div>
+
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <h1>Financial Overview</h1>
+        <p class="lead">Tracking your 50/30/20 goals starts here.</p>
+        <hr>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white p-3">
+                    <h4>Needs: 50%</h4>
+                    <p>Current: ₱0.00</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white p-3">
+                    <h4>Wants: 30%</h4>
+                    <p>Current: ₱0.00</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white p-3">
+                    <h4>Savings: 20%</h4>
+                    <p>Current: ₱0.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
