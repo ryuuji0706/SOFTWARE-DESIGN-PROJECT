@@ -1,0 +1,33 @@
+# --- Python / Environment ---
+venv/
+.venv/
+env/
+bin/
+lib/
+
+# Keep your secret vault private!
+.env
+
+# --- Django Specific ---
+# Local database (if you ever use it for testing)
+db.sqlite3
+db.sqlite3-journal
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Aiven / Security ---
+# Your SSL Certificate for the cloud DB
+*.pem
+
+# --- Media and Static ---
+# This prevents your personal test uploads from going to GitHub
+/media/
+/static/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
