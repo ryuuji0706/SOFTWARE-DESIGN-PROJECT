@@ -1,0 +1,184 @@
+/* RESET */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f7fa;
+}
+
+/* NAVBAR / HEADER */
+nav {
+    background: linear-gradient(135deg, #00c896, #00a86b);
+    color: white;
+    padding: 20px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
+nav h2 {
+    margin: 0;
+}
+
+nav a {
+    color: white;
+    margin-right: 15px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* CONTAINER */
+.container {
+    padding: 20px;
+}
+
+/* CARD DESIGN */
+.card {
+    background: white;
+    padding: 20px;
+    margin-top: -40px;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* DASHBOARD STATS */
+.card h3 {
+    margin: 0;
+    color: #555;
+}
+
+.card p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00a86b;
+}
+
+/* FORM DESIGN */
+input, select {
+    width: 90%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+input:focus {
+    border-color: #00c896;
+}
+
+/* BUTTON */
+button {
+    background: #00c896;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #00a86b;
+}
+
+/* LIST ITEMS (like transactions) */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 15px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+}
+
+/* FLOATING BUTTON (+) */
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #00c896;
+    color: white;
+    font-size: 24px;
+    padding: 15px 20px;
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
+/* SUMMARY COLORS */
+.income {
+    color: #2ecc71;
+}
+
+.expense {
+    color: #e74c3c;
+}
+
+.nav-links {
+    margin-top: 10px;
+}
+
+.nav-links a {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #888;
+    font-size: 14px;
+}
+
+/* --- Circular Chart --- */
+.circular-chart-container {
+    display: inline-block;
+    margin: 20px auto;
+    position: relative;
+}
+
+.circular-chart {
+    width: 150px;
+    height: 150px;
+    display: block;
+    margin: 0 auto;
+}
+
+.circular-chart svg {
+    width: 100%;
+    height: 100%;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 3.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 18px 18px;
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.percentage {
+    fill: #555;
+    font-size: 0.8em;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    transform: rotate(90deg);
+}
+
+/* Optional: card styling for chart */
+.card .circular-chart-container {
+    text-align: center;
+}
