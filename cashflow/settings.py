@@ -79,9 +79,6 @@ WSGI_APPLICATION = 'cashflow.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# Get the path to your certificate
-BASE_DIR = Path(__file__).resolve().parent.parent
-ssl_ca_path = os.path.join(BASE_DIR, 'ca.pem') # Ensure the file name matches
 
 DATABASES = {
     'default': {
@@ -133,3 +130,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'cashflow/static'),
+]
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Budget Manager</title>
+
+    <!-- Correct Django CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+
+    <!-- Icons (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- HEADER / NAV -->
+<nav>
+    <h2><i class="fas fa-wallet"></i> Smart Budget</h2>
+
+    <div class="nav-links">
+        <!-- Using Django url tags mapped to your urls.py names -->
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{% url 'bills' %}"><i class="fas fa-file-invoice"></i> Bills</a>
+        <a href="{% url 'expenses' %}"><i class="fas fa-money-bill-wave"></i> Expenses</a>
+        <a href="{% url 'summary' %}"><i class="fas fa-chart-line"></i> Summary</a>
+        <a href="{% url 'suggestions' %}"><i class="fas fa-lightbulb"></i> Tips</a>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- FLOATING ACTION BUTTON -->
+<div class="fab">
+    <i class="fas fa-plus"></i>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 Smart Budget Manager</p>
+</footer>
+
+<!-- Centralized JS Link (Only load this once here!) -->
+<script src="{% static 'script.js' %}"></script>
+
+</body>
+</html>

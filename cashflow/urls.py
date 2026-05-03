@@ -16,9 +16,33 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
+# Import views from all your apps with aliases to avoid naming conflicts
 from analytics import views as analytics_views
+from users import views as users_views
+from transactions import views as transactions_views
+from notifications import views as notifications_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Analytics (Main Dashboard)
     path('', analytics_views.dashboard, name='dashboard'),
+    
+    # Users (Authentication)
+    path('login/', users_views.login_user, name='login'),
+    path('register/', users_views.register_user, name='register'),
+    
+    # Transactions (Income & Expenses)
+    path('transactions/', transactions_views.transaction_list, name='transaction_list'),
+    path('transactions/add/', transactions_views.add_transaction, name='add_transaction'),
+    
+    # Notifications (Alerts & Reminders)
+    path('alerts/', notifications_views.view_alerts, name='alerts'),
+    
+    # NavBar Links (Additional Pages)
+    path('bills/', transactions_views.bills_view, name='bills'),
+    path('expenses/', transactions_views.expenses_view, name='expenses'),
+    path('summary/', analytics_views.summary_view, name='summary'),
+    path('suggestions/', analytics_views.suggestions_view, name='suggestions'),
 ]

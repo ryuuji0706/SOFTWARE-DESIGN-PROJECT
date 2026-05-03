@@ -1,35 +1,36 @@
-{% extends 'layout/base.html' %}
-
-{% block title %}Analytics Dashboard - CashFlow{% endblock %}
+{% extends 'analytics/base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="notifications-section mb-4">
-        {% include 'notifications/alerts.html' %}
+<div class="card">
+    <h3>Spending Progress</h3>
+
+    <!-- Circular Chart Container -->
+    <div class="circular-chart-container" data-percentage="{{ percentage }}">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg"
+                d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="circle"
+                d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <text x="18" y="20.35" class="percentage">0%</text>
+        </svg>
     </div>
 
-    <div class="p-5 mb-4 bg-light rounded-3">
-        <h1>Financial Overview</h1>
-        <p class="lead">Tracking your 50/30/20 goals starts here.</p>
-        <hr>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card bg-primary text-white p-3">
-                    <h4>Needs: 50%</h4>
-                    <p>Current: ₱0.00</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-success text-white p-3">
-                    <h4>Wants: 30%</h4>
-                    <p>Current: ₱0.00</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-info text-white p-3">
-                    <h4>Savings: 20%</h4>
-                    <p>Current: ₱0.00</p>
-                </div>
-            </div>
-        </div>
+    <!-- Interactive Spending Inputs -->
+    <div class="spending-details">
+        <p>
+            Budget: ₱<input type="number" id="budgetInput" value="{{ budget }}">
+        </p>
+        <p>
+            Spent: ₱<input type="number" id="spentInput" value="{{ spent }}">
+        </p>
+        <p>
+            Remaining: ₱<span id="remainingDisplay">{{ remaining }}</span>
+        </p>
     </div>
+</div>
 {% endblock %}

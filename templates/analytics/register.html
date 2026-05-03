@@ -1,0 +1,17 @@
+{% extends 'analytics/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Register</h2>
+
+<form>
+    {% csrf_token %}
+    
+    <input type="text" placeholder="Full Name"><br><br>
+    <input type="email" placeholder="Email"><br><br>
+    <input type="password" placeholder="Password"><br><br>
+    <button type="submit">Create Account</button>
+</form>
+
+<a href="/">Back to Login</a>
+{% endblock %}
