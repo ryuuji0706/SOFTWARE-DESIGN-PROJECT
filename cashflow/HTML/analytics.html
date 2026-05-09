@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CashFlow Analytics</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins', sans-serif;
+}
+
+body{
+  background:#071b2f;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* LAYOUT */
+.container{
+  display:flex;
+  height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#041527;
+  color:white;
+  padding:18px;
+}
+
+.logo h2{color:#00d2a0;}
+.logo span{font-size:12px;color:#8aa3bd;}
+
+.menu{
+  list-style:none;
+  margin-top:15px;
+}
+
+.menu li{
+  padding:12px;
+  margin-bottom:8px;
+  border-radius:8px;
+  cursor:pointer;
+  color:#9db2c8;
+  font-size:13px;
+}
+
+.menu li:hover,
+.menu .active{
+  background:#0b2844;
+  color:white;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  color:white;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:15px;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:15px;
+}
+
+.card{
+  background:#102743;
+  padding:15px;
+  border-radius:12px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:15px;
+}
+
+.panel{
+  background:#102743;
+  padding:15px;
+  border-radius:12px;
+}
+
+/* CATEGORY */
+.category-item{
+  margin-bottom:14px;
+}
+
+.category-label{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+}
+
+.progress{
+  height:10px;
+  background:#071b2f;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.progress-bar{
+  height:100%;
+  border-radius:20px;
+}
+
+.food{background:#ff5c5c;}
+.transport{background:#2aa8ff;}
+.shopping{background:#8e44ad;}
+.health{background:#00d2a0;}
+.utilities{background:#ff9f2d;}
+
+canvas{
+  max-height:260px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+  <div>
+    <div class="logo">
+      <h2>CashFlow</h2>
+      <span>Smart Finance</span>
+    </div>
+
+    <ul class="menu">
+      <li onclick="location.href='dashboard.html'">Dashboard</li>
+      <li onclick="location.href='bills.html'">Bills</li>
+      <li onclick="location.href='transactions.html'">Transactions</li>
+      <li class="active">Analytics</li>
+      <li onclick="location.href='budget.html'">Budget</li>
+      <li onclick="location.href='reminders.html'">Reminders</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="topbar">
+  <h2>Analytics</h2>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+  <div class="card"><h4>Income</h4><h2 id="income">₱0</h2></div>
+  <div class="card"><h4>Expense</h4><h2 id="expense">₱0</h2></div>
+  <div class="card"><h4>Savings</h4><h2 id="savings">₱0</h2></div>
+  <div class="card"><h4>Rate</h4><h2 id="rate">0%</h2></div>
+</div>
+
+<!-- CHARTS -->
+<div class="grid">
+
+  <div class="panel">
+    <h3>Income vs Expense</h3>
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <div class="panel">
+    <h3>Budget Monitoring</h3>
+    <canvas id="pieChart"></canvas>
+  </div>
+
+</div>
+
+<!-- EXPENSE BREAKDOWN -->
+<div class="panel" style="margin-top:15px;">
+<h3>Expense Breakdown</h3>
+
+<div id="categories"></div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+function getTransactions(){
+  return JSON.parse(localStorage.getItem("transactions")) || [];
+}
+
+/* FIX CATEGORY */
+function getCategory(desc){
+
+  desc = (desc||"").toLowerCase();
+
+  if(desc.includes("electric") || desc.includes("water") || desc.includes("internet") || desc.includes("utility")){
+    return "Utilities";
+  }
+
+  if(desc.includes("food") || desc.includes("meal")){
+    return "Food";
+  }
+
+  if(desc.includes("transport") || desc.includes("gas")){
+    return "Transport";
+  }
+
+  if(desc.includes("shop")){
+    return "Shopping";
+  }
+
+  if(desc.includes("health")){
+    return "Health";
+  }
+
+  return "Shopping";
+}
+
+/* BAR CHART */
+let barChart = new Chart(document.getElementById("barChart"), {
+  type:"bar",
+  data:{
+    labels:["Income","Expense"],
+    datasets:[{
+      data:[0,0],
+      backgroundColor:["#00d2a0","#ff5c5c"]
+    }]
+  }
+});
+
+/* PIE CHART */
+let pieChart = new Chart(document.getElementById("pieChart"), {
+  type:"pie",
+  data:{
+    labels:["Food","Transport","Shopping","Health","Utilities"],
+    datasets:[{
+      data:[0,0,0,0,0],
+      backgroundColor:["#ff5c5c","#2aa8ff","#8e44ad","#00d2a0","#ff9f2d"]
+    }]
+  }
+});
+
+/* UPDATE */
+function update(){
+
+  let t = getTransactions();
+
+  let income=0, expense=0;
+  let food=0, transport=0, shopping=0, health=0, utilities=0;
+
+  t.forEach(x=>{
+
+    let amt = Number(x.amount)||0;
+
+    if(x.type==="Income") income+=amt;
+    if(x.type==="Expense") expense+=amt;
+
+    if(x.type==="Expense"){
+      let c = getCategory(x.desc);
+
+      if(c==="Food") food+=amt;
+      if(c==="Transport") transport+=amt;
+      if(c==="Shopping") shopping+=amt;
+      if(c==="Health") health+=amt;
+      if(c==="Utilities") utilities+=amt;
+    }
+
+  });
+
+  let savings = income-expense;
+  let rate = income ? ((savings/income)*100).toFixed(1) : 0;
+
+  document.getElementById("income").innerText="₱"+income;
+  document.getElementById("expense").innerText="₱"+expense;
+  document.getElementById("savings").innerText="₱"+savings;
+  document.getElementById("rate").innerText=rate+"%";
+
+  barChart.data.datasets[0].data=[income,expense];
+  barChart.update();
+
+  pieChart.data.datasets[0].data=[food,transport,shopping,health,utilities];
+  pieChart.update();
+
+  let max = Math.max(food,transport,shopping,health,utilities,1);
+
+  document.getElementById("categories").innerHTML = `
+    ${make("Food",food,max)}
+    ${make("Transport",transport,max)}
+    ${make("Shopping",shopping,max)}
+    ${make("Health",health,max)}
+    ${make("Utilities",utilities,max)}
+  `;
+}
+
+function make(name,val,max){
+  return `
+  <div class="category-item">
+    <div class="category-label">
+      <span>${name}</span>
+      <span>₱${val}</span>
+    </div>
+    <div class="progress">
+      <div class="progress-bar" style="width:${(val/max)*100}%;background:#00d2a0"></div>
+    </div>
+  </div>`;
+}
+
+/* LIVE UPDATE */
+setInterval(update,1000);
+update();
+
+</script>
+
+</body>
+</html>
