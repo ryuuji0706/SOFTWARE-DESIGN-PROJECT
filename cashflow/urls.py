@@ -42,7 +42,7 @@ urlpatterns = [
     path('budget/set/', transactions_views.set_budget, name='set_budget'),
     
     # Notifications (Alerts & Reminders)
-    path('alerts/', notifications_views.view_alerts, name='alerts'),
+    path('reminders/', notifications_views.reminders_view, name='reminders'),
     
     # NavBar Links (Additional Pages)
     path('bills/', transactions_views.bills_view, name='bills'),
