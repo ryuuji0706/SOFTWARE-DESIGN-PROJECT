@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Sum
-from django.shortcuts import render
+from django.db.models import Sum, Q
 from transactions.models import Transaction, Bill
 
 def dashboard(request):
@@ -30,10 +29,43 @@ def dashboard(request):
     
     return render(request, 'analytics/dashboard.html', context)
 
-# --- PLACEHOLDER VIEWS ---
-
 def summary_view(request):
-    return render(request, 'analytics/summary.html')
+    # 1. Totals
+    income = Transaction.objects.filter(type='INCOME').aggregate(total=Sum('amount'))['total'] or 0
+    expense = Transaction.objects.filter(type='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
+    
+    savings = income - expense
+    rate = round((savings / income) * 100, 1) if income > 0 else 0
+
+    # 2. Categorization (Replicating your JS keyword logic using Django Q objects)
+    food = Transaction.objects.filter(type='EXPENSE').filter(Q(description__icontains='food') | Q(description__icontains='meal')).aggregate(total=Sum('amount'))['total'] or 0
+    transport = Transaction.objects.filter(type='EXPENSE').filter(Q(description__icontains='transport') | Q(description__icontains='gas')).aggregate(total=Sum('amount'))['total'] or 0
+    health = Transaction.objects.filter(type='EXPENSE').filter(description__icontains='health').aggregate(total=Sum('amount'))['total'] or 0
+    utilities = Transaction.objects.filter(type='EXPENSE').filter(Q(description__icontains='electric') | Q(description__icontains='water') | Q(description__icontains='internet') | Q(description__icontains='utility')).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # In your JS, anything else falls back to 'Shopping'
+    shopping = expense - (food + transport + health + utilities)
+    if shopping < 0: 
+        shopping = 0
+
+    # 3. Find max for the progress bars
+    max_cat = max([food, transport, shopping, health, utilities, 1])
+
+    context = {
+        'income': income,
+        'expense': expense,
+        'savings': savings,
+        'rate': rate,
+        'food': food,
+        'transport': transport,
+        'shopping': shopping,
+        'health': health,
+        'utilities': utilities,
+        'max_cat': max_cat
+    }
+    return render(request, 'analytics/analytics.html', context)
+
+# --- PLACEHOLDER VIEWS ---
 
 def suggestions_view(request):
     return render(request, 'analytics/suggestion.html')

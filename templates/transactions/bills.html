@@ -59,7 +59,7 @@ form { display: inline; } /* Ensures buttons sit next to each other */
       <li class="active">Bills</li>
       <li onclick="location.href='{% url 'transaction_list' %}'">Transactions</li>
       <li onclick="location.href='{% url 'summary' %}'">Analytics</li>
-      <li onclick="location.href='#'">Budget</li>
+      <li onclick="location.href='{% url 'budget' %}'">Budget</li>
       <li onclick="location.href='#'">Reminders</li>
     </ul>
   </div>

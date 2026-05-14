@@ -37,6 +37,10 @@ urlpatterns = [
     path('transactions/', transactions_views.transaction_list, name='transaction_list'),
     path('transactions/add/', transactions_views.add_transaction, name='add_transaction'),
     
+    # Budgets (Spending Limits)
+    path('budget/', transactions_views.budget_view, name='budget'),
+    path('budget/set/', transactions_views.set_budget, name='set_budget'),
+    
     # Notifications (Alerts & Reminders)
     path('alerts/', notifications_views.view_alerts, name='alerts'),
     
