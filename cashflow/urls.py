@@ -42,7 +42,13 @@ urlpatterns = [
     
     # NavBar Links (Additional Pages)
     path('bills/', transactions_views.bills_view, name='bills'),
+    path('bills/add/', transactions_views.add_bill, name='add_bill'),
+    path('bills/update/<int:bill_id>/<str:new_status>/', transactions_views.update_bill, name='update_bill'),
+    path('bills/delete/<int:bill_id>/', transactions_views.delete_bill, name='delete_bill'),
+    
     path('expenses/', transactions_views.expenses_view, name='expenses'),
     path('summary/', analytics_views.summary_view, name='summary'),
     path('suggestions/', analytics_views.suggestions_view, name='suggestions'),
+    
+    
 ]

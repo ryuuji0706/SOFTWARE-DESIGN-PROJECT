@@ -33,6 +33,7 @@ class Bill(models.Model):
     STATUS_CHOICES = [
         ('Paid', 'Paid'),
         ('Unpaid', 'Unpaid'),
+        ('Overdue', 'Overdue'), 
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)

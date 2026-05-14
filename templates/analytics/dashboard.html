@@ -1,36 +1,161 @@
-{% extends 'analytics/base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CashFlow Dashboard</title>
 
-{% block content %}
-<div class="card">
-    <h3>Spending Progress</h3>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Circular Chart Container -->
-    <div class="circular-chart-container" data-percentage="{{ percentage }}">
-        <svg viewBox="0 0 36 36" class="circular-chart">
-            <path class="circle-bg"
-                d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            <path class="circle"
-                d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            <text x="18" y="20.35" class="percentage">0%</text>
-        </svg>
+<style>
+
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+
+body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; }
+
+/* SIDEBAR */
+.sidebar{ width:240px; background:#041527; color:white; display:flex; flex-direction:column; justify-content:space-between; padding:20px 15px; }
+.logo h2{ font-size:24px; color:#00d2a0; }
+.logo span{ font-size:12px; color:#8aa3bd; }
+.menu{ list-style:none; margin-top:20px; }
+.menu li{ padding:14px 16px; margin-bottom:10px; border-radius:10px; cursor:pointer; transition:0.3s; color:#9db2c8; font-size:14px; }
+.menu li:hover, .menu .active{ background:#0b2844; color:white; }
+
+/* MAIN */
+.main-content{ flex:1; padding:25px; background:#081d33; color:white; overflow-y:auto; }
+
+/* TOPBAR */
+.topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
+.topbar h1{ font-size:28px; }
+.topbar p{ color:#8aa3bd; font-size:13px; }
+.user{ display:flex; align-items:center; gap:10px; }
+.user-circle{ width:38px; height:38px; border-radius:50%; background:#00d2a0; }
+.logout-btn{ background:#ff5c5c; border:none; padding:10px 14px; border-radius:8px; color:white; cursor:pointer; }
+
+/* CARDS */
+.cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:20px; }
+.card{ background:#102743; padding:20px; border-radius:14px; border-left:3px solid #00d2a0; }
+.card h3{ font-size:13px; color:#8aa3bd; }
+.card h2{ font-size:26px; }
+
+/* GRID */
+.content-grid{ display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+.panel{ background:#102743; border-radius:14px; padding:20px; }
+.panel-header{ display:flex; justify-content:space-between; margin-bottom:15px; color:#8aa3bd; }
+.bill{ padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.bill-top{ display:flex; justify-content:space-between; color:white; }
+small{ color:#8aa3bd; }
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div>
+    <div class="logo">
+      <h2>CashFlow</h2>
+      <span>Smart Finance</span>
     </div>
 
-    <!-- Interactive Spending Inputs -->
-    <div class="spending-details">
-        <p>
-            Budget: ₱<input type="number" id="budgetInput" value="{{ budget }}">
-        </p>
-        <p>
-            Spent: ₱<input type="number" id="spentInput" value="{{ spent }}">
-        </p>
-        <p>
-            Remaining: ₱<span id="remainingDisplay">{{ remaining }}</span>
-        </p>
-    </div>
+    <ul class="menu">
+      <li class="active" onclick="location.href='{% url 'dashboard' %}'">Dashboard</li>
+      <li onclick="location.href='{% url 'bills' %}'">Bills</li>
+      <li onclick="location.href='{% url 'expenses' %}'">Transactions</li>
+      <li onclick="location.href='{% url 'summary' %}'">Analytics</li>
+      
+      <li onclick="location.href='#'">Budget</li>
+      <li onclick="location.href='#'">Reminders</li>
+    </ul>
+  </div>
 </div>
-{% endblock %}
+
+<div class="main-content">
+
+  <div class="topbar">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Real-time financial overview</p>
+    </div>
+
+    <div class="user">
+      <div class="user-circle"></div>
+      <span id="username">{{ request.user.username|default:"User" }}</span>
+      <button class="logout-btn" onclick="location.href='#'">Logout</button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Bills</h3>
+      <h2 id="totalBills">{{ total_bills }}</h2>
+    </div>
+
+    <div class="card">
+      <h3>Paid Bills</h3>
+      <h2 id="paidBills">{{ paid_bills }}</h2>
+    </div>
+
+    <div class="card">
+      <h3>Unpaid Bills</h3>
+      <h2 id="unpaidBills">{{ unpaid_bills }}</h2>
+    </div>
+
+    <div class="card">
+      <h3>Reminders</h3>
+      <h2 id="reminderCount">{{ reminder_count }}</h2>
+    </div>
+  </div>
+
+  <div class="content-grid">
+
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Recent Bills</h3>
+        <span>Live</span>
+      </div>
+
+      <div id="recentBills">
+        {% for bill in recent_bills %}
+          <div class="bill">
+            <div class="bill-top">
+              <strong>{{ bill.name }}</strong>
+              <span>₱{{ bill.amount }}</span>
+            </div>
+            <small>{{ bill.status }} | Due: {{ bill.due_date }}</small>
+          </div>
+        {% empty %}
+          <small>No bills yet. Add some in the Django Admin panel!</small>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Upcoming Reminders</h3>
+      </div>
+
+      <div id="reminderList">
+        {% for r in recent_reminders %}
+          <div class="bill">
+            <div class="bill-top">
+              <strong>{{ r.name }}</strong>
+              <span>₱{{ r.amount }}</span>
+            </div>
+            <small>{{ r.status }}</small>
+          </div>
+        {% empty %}
+          <small>No reminders yet.</small>
+        {% endfor %}
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
