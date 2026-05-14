@@ -14,7 +14,7 @@ def reminders_view(request):
         'overdue_bills': overdue_bills,
         
         # Calculate the stats for the top cards
-        'pending': all_reminders.filter(status='Pending').count(),
+        'pending': all_reminders.filter(status='Unpaid').count(), # <-- Look for Unpaid
         'done': all_reminders.filter(status='Completed').count(),
         'overdue': overdue_bills.count(),
     }

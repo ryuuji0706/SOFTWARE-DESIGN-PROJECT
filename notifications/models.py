@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class Reminder(models.Model):
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),
+        ('Unpaid', 'Unpaid'),
         ('Completed', 'Completed'),
     ]
     
