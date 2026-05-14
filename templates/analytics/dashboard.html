@@ -48,6 +48,13 @@ body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidde
 .bill-top{ display:flex; justify-content:space-between; color:white; }
 small{ color:#8aa3bd; }
 
+/* MODAL */
+.modal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
+.modal-content { width:400px; background:#102743; padding:20px; border-radius:14px; max-height:80vh; overflow-y:auto; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+.close-btn { background:none; border:none; color:#ff5c5c; font-size:28px; cursor:pointer; padding:0; line-height: 1; }
+.show-btn { background:#00d2a0; color:#06251d; border:none; padding:4px 10px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; }
+
 </style>
 </head>
 
@@ -89,17 +96,26 @@ small{ color:#8aa3bd; }
 
   <div class="cards">
     <div class="card">
-      <h3>Total Bills</h3>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h3>Total Bills</h3>
+        <button class="show-btn" onclick="openModal('all')">Show</button>
+      </div>
       <h2 id="totalBills">{{ total_bills }}</h2>
     </div>
 
     <div class="card">
-      <h3>Paid Bills</h3>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h3>Paid Bills</h3>
+        <button class="show-btn" onclick="openModal('paid')">Show</button>
+      </div>
       <h2 id="paidBills">{{ paid_bills }}</h2>
     </div>
 
     <div class="card">
-      <h3>Unpaid Bills</h3>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h3>Unpaid Bills</h3>
+        <button class="show-btn" onclick="openModal('unpaid')">Show</button>
+      </div>
       <h2 id="unpaidBills">{{ unpaid_bills }}</h2>
     </div>
 
@@ -142,20 +158,90 @@ small{ color:#8aa3bd; }
           <div class="bill">
             <div class="bill-top">
               <strong>{{ r.name }}</strong>
-              <span>₱{{ r.amount }}</span>
+              <span>{% if r.amount %}₱{{ r.amount }}{% endif %}</span>
             </div>
-            <small>{{ r.status }}</small>
+            <small style="color:#ffb020;">{{ r.status }}</small>
           </div>
         {% empty %}
-          <small>No reminders yet.</small>
+          <small>No pending reminders.</small>
         {% endfor %}
       </div>
+    </div>
 
     </div>
 
   </div>
 
 </div>
+
+<div class="modal" id="billModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Bills</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    
+    <div id="list-all" style="display:none;">
+      {% for b in all_bills_list %}
+        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+      {% empty %}
+        <small>No bills found.</small>
+      {% endfor %}
+    </div>
+
+    <div id="list-paid" style="display:none;">
+      {% for b in paid_bills_list %}
+        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+      {% empty %}
+        <small>No paid bills found.</small>
+      {% endfor %}
+    </div>
+
+    <div id="list-unpaid" style="display:none;">
+      {% for b in unpaid_bills_list %}
+        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+      {% empty %}
+        <small>No unpaid bills found.</small>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function openModal(type) {
+    document.getElementById('billModal').style.display = 'flex';
+    
+    // Hide all lists first
+    document.getElementById('list-all').style.display = 'none';
+    document.getElementById('list-paid').style.display = 'none';
+    document.getElementById('list-unpaid').style.display = 'none';
+
+    // Show the correct list and update title
+    if (type === 'all') {
+        document.getElementById('list-all').style.display = 'block';
+        document.getElementById('modalTitle').innerText = 'All Bills';
+    } else if (type === 'paid') {
+        document.getElementById('list-paid').style.display = 'block';
+        document.getElementById('modalTitle').innerText = 'Paid Bills';
+    } else if (type === 'unpaid') {
+        document.getElementById('list-unpaid').style.display = 'block';
+        document.getElementById('modalTitle').innerText = 'Unpaid Bills';
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('billModal').style.display = 'none';
+  }
+
+  // Close modal if user clicks the dark background outside of it
+  window.onclick = function(event) {
+    const modal = document.getElementById('billModal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  }
+</script>
 
 </body>
 </html>

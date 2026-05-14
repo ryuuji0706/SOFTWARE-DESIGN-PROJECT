@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from django.db.models import Sum, Q
 from transactions.models import Transaction, Bill
+from notifications.models import Reminder
 
 def dashboard(request):
     # --- WORKING BACKEND FEATURES (BILLS) ---
     all_bills = Bill.objects.all()
+    
+    # Fetch the reminders (filtering by 'Unpaid' so only pending ones show up)
+    unpaid_reminders = Reminder.objects.filter(status='Unpaid').order_by('-created_at')
     
     total_bills = all_bills.count()
     paid_bills = all_bills.filter(status='Paid').count()
@@ -21,6 +25,15 @@ def dashboard(request):
         'paid_bills': paid_bills,
         'unpaid_bills': unpaid_bills,
         'recent_bills': recent_bills,
+        
+        # Modal Lists
+        'all_bills_list': all_bills,
+        'paid_bills_list': all_bills.filter(status='Paid'),
+        'unpaid_bills_list': all_bills.filter(status='Unpaid'),
+        
+        # Reminders Data
+        'reminder_count': unpaid_reminders.count(),
+        'recent_reminders': unpaid_reminders[:5], # Only send the 5 most recent to the dashboard UI
         
         # Kept for the non-functioning UI
         'reminder_count': reminder_count,
