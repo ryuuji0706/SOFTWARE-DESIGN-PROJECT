@@ -42,6 +42,7 @@ class Bill(models.Model):
     due_date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Unpaid')
     created_at = models.DateTimeField(auto_now_add=True)
+    is_monthly = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} - ₱{self.amount} ({self.status})"

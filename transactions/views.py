@@ -1,9 +1,20 @@
-from datetime import date
+from datetime import datetime, date
+import calendar
 from django.db.models import Sum, Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import Bill, Transaction, Budget
 from django.contrib.auth.decorators import login_required
+
+# --- HELPER FUNCTION: Safely adds 1 month to a date ---
+def add_one_month(orig_date):
+    month = orig_date.month - 1 + 1
+    year = orig_date.year + month // 12
+    month = month % 12 + 1
+    day = min(orig_date.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+# ==========================================
 
 # ==========================================
 # BILLS VIEWS
@@ -28,19 +39,63 @@ def add_bill(request):
         name = request.POST.get('name')
         amount = request.POST.get('amount')
         due = request.POST.get('due')
+        is_monthly = request.POST.get('is_monthly') == 'true' # Converts string to Boolean
         
-        # Secured: Saves directly to the logged-in user
-        Bill.objects.create(user=request.user, name=name, amount=amount, due_date=due, status='Unpaid')
+        # 1. Convert the HTML date string into a real Python Date object
+        due_date_obj = datetime.strptime(due, '%Y-%m-%d').date()
+        
+        # 2. AUTO-OVERDUE LOGIC
+        if due_date_obj < date.today():
+            status = 'Overdue'
+        else:
+            status = 'Unpaid'
+            
+        Bill.objects.create(
+            user=request.user, 
+            name=name, 
+            amount=amount, 
+            due_date=due_date_obj, 
+            status=status,
+            is_monthly=is_monthly  # Save our new setting!
+        )
         
     return redirect('bills')
 
 @login_required
 def update_bill(request, bill_id, new_status):
     if request.method == 'POST':
-        # Secured: Ensures they can only update THEIR bills
         bill = get_object_or_404(Bill, id=bill_id, user=request.user)
-        bill.status = new_status
-        bill.save()
+        
+        # MONTHLY ROLLOVER LOGIC
+        if new_status == 'Paid' and bill.is_monthly:
+            # 1. Mark the CURRENT bill as permanently Paid
+            bill.status = 'Paid'
+            bill.save()
+            
+            # 2. Calculate the NEXT month's date
+            next_due_date = add_one_month(bill.due_date)
+            
+            # 3. Check if the newly generated date is somehow already past due
+            if next_due_date < date.today():
+                next_status = 'Overdue'
+            else:
+                next_status = 'Unpaid'
+                
+            # 4. Clone it! Create a brand new bill for next month
+            Bill.objects.create(
+                user=bill.user,
+                name=bill.name,
+                amount=bill.amount,
+                due_date=next_due_date,
+                status=next_status,
+                is_monthly=True
+            )
+            
+        else:
+            # Normal behavior for One-Time bills, or changing to Unpaid/Overdue
+            bill.status = new_status
+            bill.save()
+            
     return redirect('bills')
 
 @login_required

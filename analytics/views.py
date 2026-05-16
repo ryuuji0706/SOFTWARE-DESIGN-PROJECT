@@ -6,24 +6,26 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard(request):
-    # 1. Grab Bills belonging ONLY to the logged-in user
     all_bills = Bill.objects.filter(user=request.user)
-    
-    # 2. Grab Reminders belonging ONLY to the logged-in user
     unpaid_reminders = Reminder.objects.filter(user=request.user, status='Unpaid').order_by('-created_at')
     
     context = {
         'total_bills': all_bills.count(),
         'paid_bills': all_bills.filter(status='Paid').count(),
         'unpaid_bills': all_bills.filter(status='Unpaid').count(),
+        
+        # 1. NEW: Add Overdue Count
+        'overdue_bills': all_bills.filter(status='Overdue').count(), 
+        
         'recent_bills': all_bills.order_by('-due_date')[:5],
         
-        # Modal Lists
         'all_bills_list': all_bills,
         'paid_bills_list': all_bills.filter(status='Paid'),
         'unpaid_bills_list': all_bills.filter(status='Unpaid'),
         
-        # Reminders Data
+        # 2. NEW: Add Overdue List for the Modal
+        'overdue_bills_list': all_bills.filter(status='Overdue'), 
+        
         'reminder_count': unpaid_reminders.count(),
         'recent_reminders': unpaid_reminders[:5], 
     }

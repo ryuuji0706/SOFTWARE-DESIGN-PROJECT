@@ -35,7 +35,7 @@ body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidde
 .logout-btn{ background:#ff5c5c; border:none; padding:10px 14px; border-radius:8px; color:white; cursor:pointer; }
 
 /* CARDS */
-.cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:20px; }
+.cards { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:15px; }
 .card{ background:#102743; padding:20px; border-radius:14px; border-left:3px solid #00d2a0; }
 .card h3{ font-size:13px; color:#8aa3bd; }
 .card h2{ font-size:26px; }
@@ -70,7 +70,7 @@ small{ color:#8aa3bd; }
     <ul class="menu">
       <li class="active" onclick="location.href='{% url 'dashboard' %}'">Dashboard</li>
       <li onclick="location.href='{% url 'bills' %}'">Bills</li>
-      <li onclick="location.href='{% url 'expenses' %}'">Transactions</li>
+      <li onclick="location.href='{% url 'transaction_list' %}'">Transactions</li>
       <li onclick="location.href='{% url 'summary' %}'">Analytics</li>
       
       <li onclick="location.href='{% url 'budget' %}'">Budget</li>
@@ -120,6 +120,14 @@ small{ color:#8aa3bd; }
     </div>
 
     <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h3 style="color:#ff5c5c;">Overdue</h3>
+        <button class="show-btn" onclick="openModal('overdue')" style="background:#ff5c5c; color:white;">Show</button>
+      </div>
+      <h2 id="overdueBills">{{ overdue_bills }}</h2>
+    </div>
+
+    <div class="card">
       <h3>Reminders</h3>
       <h2 id="reminderCount">{{ reminder_count }}</h2>
     </div>
@@ -140,7 +148,12 @@ small{ color:#8aa3bd; }
               <strong>{{ bill.name }}</strong>
               <span>₱{{ bill.amount }}</span>
             </div>
-            <small>{{ bill.status }} | Due: {{ bill.due_date }}</small>
+            <small>
+              {{ bill.status }} | Due: {{ bill.due_date }}
+              {% if bill.is_monthly %}
+                <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong>
+              {% endif %}
+            </small>
           </div>
         {% empty %}
           <small>No bills yet. Add some in the Django Admin panel!</small>
@@ -183,7 +196,13 @@ small{ color:#8aa3bd; }
     
     <div id="list-all" style="display:none;">
       {% for b in all_bills_list %}
-        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+        <div class="bill">
+          <div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div>
+          <small>
+            {{ b.status }} | Due: {{ b.due_date }}
+            {% if b.is_monthly %} <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong> {% endif %}
+          </small>
+        </div>
       {% empty %}
         <small>No bills found.</small>
       {% endfor %}
@@ -191,7 +210,13 @@ small{ color:#8aa3bd; }
 
     <div id="list-paid" style="display:none;">
       {% for b in paid_bills_list %}
-        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+        <div class="bill">
+          <div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div>
+          <small>
+            {{ b.status }} | Due: {{ b.due_date }}
+            {% if b.is_monthly %} <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong> {% endif %}
+          </small>
+        </div>
       {% empty %}
         <small>No paid bills found.</small>
       {% endfor %}
@@ -199,9 +224,29 @@ small{ color:#8aa3bd; }
 
     <div id="list-unpaid" style="display:none;">
       {% for b in unpaid_bills_list %}
-        <div class="bill"><div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div><small>{{ b.status }} | Due: {{ b.due_date }}</small></div>
+        <div class="bill">
+          <div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div>
+          <small>
+            {{ b.status }} | Due: {{ b.due_date }}
+            {% if b.is_monthly %} <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong> {% endif %}
+          </small>
+        </div>
       {% empty %}
         <small>No unpaid bills found.</small>
+      {% endfor %}
+    </div>
+
+    <div id="list-overdue" style="display:none;">
+      {% for b in overdue_bills_list %}
+        <div class="bill">
+          <div class="bill-top"><strong>{{ b.name }}</strong><span>₱{{ b.amount }}</span></div>
+          <small style="color:#ff5c5c;">
+            {{ b.status }} | Due: {{ b.due_date }}
+            {% if b.is_monthly %} <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong> {% endif %}
+          </small>
+        </div>
+      {% empty %}
+        <small>No overdue bills found.</small>
       {% endfor %}
     </div>
 
@@ -216,6 +261,7 @@ small{ color:#8aa3bd; }
     document.getElementById('list-all').style.display = 'none';
     document.getElementById('list-paid').style.display = 'none';
     document.getElementById('list-unpaid').style.display = 'none';
+    document.getElementById('list-overdue').style.display = 'none'; 
 
     // Show the correct list and update title
     if (type === 'all') {
@@ -227,6 +273,9 @@ small{ color:#8aa3bd; }
     } else if (type === 'unpaid') {
         document.getElementById('list-unpaid').style.display = 'block';
         document.getElementById('modalTitle').innerText = 'Unpaid Bills';
+    } else if (type === 'overdue') { 
+        document.getElementById('list-overdue').style.display = 'block';
+        document.getElementById('modalTitle').innerText = 'Overdue Bills';
     }
   }
 
