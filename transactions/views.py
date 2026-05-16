@@ -1,16 +1,17 @@
+from datetime import date
 from django.db.models import Sum, Q
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Bill, Transaction, Budget
+from django.contrib.auth.decorators import login_required
 
+# ==========================================
+# BILLS VIEWS
+# ==========================================
+
+@login_required
 def bills_view(request):
-    # Fetch all bills from the database
-    bills = Bill.objects.all().order_by('-created_at')
-    
-    # --- ADD THESE TWO LINES ---
-    print("BILLS FOUND:", bills) 
-    print("TOTAL COUNT:", bills.count())
-    # ---------------------------
+    bills = Bill.objects.filter(user=request.user).order_by('-created_at')
     
     context = {
         'bills': bills,
@@ -21,45 +22,62 @@ def bills_view(request):
     }
     return render(request, 'transactions/bills.html', context)
 
+@login_required
 def add_bill(request):
     if request.method == 'POST':
-        # Grab data from the HTML form
         name = request.POST.get('name')
         amount = request.POST.get('amount')
         due = request.POST.get('due')
         
-        # Temporarily assign to the first user if authentication isn't fully built yet
-        user = request.user if request.user.is_authenticated else User.objects.first()
-        
-        # Save to database
-        Bill.objects.create(user=user, name=name, amount=amount, due_date=due, status='Unpaid')
+        # Secured: Saves directly to the logged-in user
+        Bill.objects.create(user=request.user, name=name, amount=amount, due_date=due, status='Unpaid')
         
     return redirect('bills')
 
+@login_required
 def update_bill(request, bill_id, new_status):
     if request.method == 'POST':
-        bill = Bill.objects.get(id=bill_id)
+        # Secured: Ensures they can only update THEIR bills
+        bill = get_object_or_404(Bill, id=bill_id, user=request.user)
         bill.status = new_status
         bill.save()
     return redirect('bills')
 
+@login_required
 def delete_bill(request, bill_id):
     if request.method == 'POST':
-        Bill.objects.get(id=bill_id).delete()
+        # Secured: Ensures they can only delete THEIR bills
+        bill = get_object_or_404(Bill, id=bill_id, user=request.user)
+        bill.delete()
     return redirect('bills')
 
+# --- NEW: EDIT BILL (Option A) ---
+@login_required
+def edit_bill(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id, user=request.user)
+    
+    if request.method == 'POST':
+        bill.name = request.POST.get('name', bill.name)
+        bill.amount = request.POST.get('amount', bill.amount)
+        bill.due_date = request.POST.get('due', bill.due_date)
+        bill.save()
+        return redirect('bills')
+        
+    # If using a dedicated edit page. If using modals, you might just use POST.
+    return render(request, 'transactions/edit_bill.html', {'bill': bill})
 
+
+# ==========================================
+# TRANSACTIONS VIEWS
+# ==========================================
+
+@login_required
 def transaction_list(request):
-    # Fetch latest 10 transactions
-    transactions = Transaction.objects.all().order_by('-created_at')[:10]
+    user_txns = Transaction.objects.filter(user=request.user)
+    transactions = user_txns.order_by('-transaction_date')[:10]
 
-    # Calculate totals using Django's database aggregate functions
-    income_query = Transaction.objects.filter(type='INCOME').aggregate(total=Sum('amount'))
-    total_income = income_query['total'] or 0
-
-    expense_query = Transaction.objects.filter(type='EXPENSE').aggregate(total=Sum('amount'))
-    total_expense = expense_query['total'] or 0
-
+    total_income = user_txns.filter(type='INCOME').aggregate(total=Sum('amount'))['total'] or 0
+    total_expense = user_txns.filter(type='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
     net = total_income - total_expense
 
     context = {
@@ -68,20 +86,18 @@ def transaction_list(request):
         'total_expense': total_expense,
         'net': net,
     }
-    # Make sure this matches where you save the HTML file!
     return render(request, 'transactions/transactions.html', context)
 
+@login_required
 def add_transaction(request):
     if request.method == 'POST':
         desc = request.POST.get('desc')
         amount = request.POST.get('amount')
-        txn_type = request.POST.get('type') # Will grab 'INCOME' or 'EXPENSE' from the form
+        txn_type = request.POST.get('type') 
         
-        user = request.user if request.user.is_authenticated else User.objects.first()
-        
-        # We use today's date automatically since it isn't in your form UI
+        # Secured: Single clean version tied directly to the user
         Transaction.objects.create(
-            user=user,
+            user=request.user,
             description=desc,
             amount=amount,
             type=txn_type,
@@ -89,17 +105,32 @@ def add_transaction(request):
         )
     return redirect('transaction_list')
 
+# --- NEW: DELETE TRANSACTION (Option A) ---
+@login_required
+def delete_transaction(request, transaction_id):
+    if request.method == 'POST':
+        # Secured lookup before deletion
+        txn = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+        txn.delete()
+    return redirect('transaction_list')
+
+
+# ==========================================
+# BUDGET VIEWS
+# ==========================================
+
+@login_required
 def budget_view(request):
-    # 1. Fetch user budgets (Convert them into a dictionary for easy lookup)
-    user_budgets = {b.category_name: b.limit for b in Budget.objects.all()}
+    user_budgets = {b.category_name: b.limit for b in Budget.objects.filter(user=request.user)}
     
-    # 2. Setup Month Filtering (JS months are 0-11, Django is 1-12)
     selected_month = request.GET.get('month', 'all')
-    base_query = Transaction.objects.filter(type='EXPENSE')
+    
+    # FIXED PRIVACY LEAK: Now safely filters by user=request.user
+    base_query = Transaction.objects.filter(user=request.user, type='EXPENSE')
+    
     if selected_month != 'all':
         base_query = base_query.filter(transaction_date__month=int(selected_month) + 1)
 
-    # 3. Calculate spent per category using the same logic as Analytics
     spent_data = {
         'Food': base_query.filter(Q(description__icontains='food') | Q(description__icontains='meal')).aggregate(total=Sum('amount'))['total'] or 0,
         'Transport': base_query.filter(Q(description__icontains='transport') | Q(description__icontains='gas')).aggregate(total=Sum('amount'))['total'] or 0,
@@ -107,21 +138,18 @@ def budget_view(request):
         'Utilities': base_query.filter(Q(description__icontains='electric') | Q(description__icontains='water') | Q(description__icontains='internet') | Q(description__icontains='utility')).aggregate(total=Sum('amount'))['total'] or 0,
     }
     
-    # Shopping is the fallback for any unmapped expenses
     total_expense = base_query.aggregate(total=Sum('amount'))['total'] or 0
     shopping_spent = total_expense - sum(spent_data.values())
     spent_data['Shopping'] = shopping_spent if shopping_spent > 0 else 0
 
-    # 4. Process the data for the HTML Template
     categories_info = []
     g_count = w_count = b_count = 0
 
     for cat_name in ['Food', 'Transport', 'Utilities', 'Shopping', 'Health']:
-        limit = user_budgets.get(cat_name, 1000) # Default to 1000 if not set
+        limit = user_budgets.get(cat_name, 1000)
         spent = spent_data[cat_name]
         percent = (spent / limit) * 100 if limit > 0 else 0
         
-        # Status
         if percent >= 100:
             cls, label = "bad", "Over"
             b_count += 1
@@ -132,7 +160,6 @@ def budget_view(request):
             cls, label = "good", "Good"
             g_count += 1
 
-        # Dynamic Suggestions
         if percent < 50: suggestion = "Good control"
         elif cat_name == "Food": suggestion = "Cook at home"
         elif cat_name == "Transport": suggestion = "Use public transport"
@@ -145,7 +172,7 @@ def budget_view(request):
             'name': cat_name,
             'spent': spent,
             'limit': limit,
-            'percent': min(percent, 100), # Caps progress bar visually at 100%
+            'percent': min(percent, 100),
             'cls': cls,
             'label': label,
             'suggestion': suggestion
@@ -160,23 +187,20 @@ def budget_view(request):
     }
     return render(request, 'transactions/budget.html', context)
 
-
+@login_required
 def set_budget(request):
     if request.method == 'POST':
         cat = request.POST.get('cat')
         amount = request.POST.get('amount')
-        user = request.user if request.user.is_authenticated else User.objects.first()
         
-        # update_or_create means if a budget already exists for Food, it updates it. If not, it creates it!
+        # Secured: Removed the User.objects.first() fallback
         Budget.objects.update_or_create(
-            user=user,
+            user=request.user,
             category_name=cat,
             defaults={'limit': amount}
         )
     return redirect('budget')
 
-# --- NEW PLACEHOLDER VIEWS ---
-
+@login_required
 def expenses_view(request):
-    # Placeholder for the expenses page
     return render(request, 'analytics/expenses.html')

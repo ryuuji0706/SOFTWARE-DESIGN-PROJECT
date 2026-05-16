@@ -90,7 +90,7 @@ small{ color:#8aa3bd; }
     <div class="user">
       <div class="user-circle"></div>
       <span id="username">{{ request.user.username|default:"User" }}</span>
-      <button class="logout-btn" onclick="location.href='#'">Logout</button>
+      <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
     </div>
   </div>
 

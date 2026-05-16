@@ -32,10 +32,12 @@ urlpatterns = [
     # Users (Authentication)
     path('login/', users_views.login_user, name='login'),
     path('register/', users_views.register_user, name='register'),
+    path('logout/', users_views.logout_user, name='logout'),
     
     # Transactions (Income & Expenses)
     path('transactions/', transactions_views.transaction_list, name='transaction_list'),
     path('transactions/add/', transactions_views.add_transaction, name='add_transaction'),
+    path('transactions/delete/<int:transaction_id>/', transactions_views.delete_transaction, name='delete_transaction'),
     
     # Budgets (Spending Limits)
     path('budget/', transactions_views.budget_view, name='budget'),
@@ -49,6 +51,7 @@ urlpatterns = [
     path('bills/add/', transactions_views.add_bill, name='add_bill'),
     path('bills/update/<int:bill_id>/<str:new_status>/', transactions_views.update_bill, name='update_bill'),
     path('bills/delete/<int:bill_id>/', transactions_views.delete_bill, name='delete_bill'),
+    path('bills/edit/<int:bill_id>/', transactions_views.edit_bill, name='edit_bill'),
     
     path('expenses/', transactions_views.expenses_view, name='expenses'),
     path('summary/', analytics_views.summary_view, name='summary'),
