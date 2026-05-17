@@ -24,10 +24,13 @@ body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidde
 .user-circle{ width:38px; height:38px; border-radius:50%; background:#00d2a0; }
 .cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:20px; }
 .card{ background:#102743; padding:22px; border-radius:14px; border-left:3px solid #00d2a0; }
+
+/* NEW: Grid for side-by-side layout */
+.content-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: flex-start; }
+
 .panel{ background:#102743; border-radius:14px; padding:20px; margin-bottom:20px; }
 .panel-header{ display:flex; justify-content:space-between; margin-bottom:15px; }
 
-/* UPDATED: Inputs AND Select dropdowns share the same dark styling */
 input, select { 
     width:100%; 
     padding:12px; 
@@ -39,11 +42,7 @@ input, select {
     outline:none; 
     cursor:pointer;
 }
-/* Ensures the dropdown options match the dark theme */
-select option {
-    background: #071b2f;
-    color: white;
-}
+select option { background: #071b2f; color: white; }
 
 button{ border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
 .addBtn{ background:#2aa8ff; color:white; margin-top:15px;}
@@ -101,82 +100,114 @@ form { display: inline; }
     <div class="card"><h3>Overdue</h3><h2 id="overdue">{{ overdue }}</h2></div>
   </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h3>Add Bill</h3>
-    </div>
-    <form action="{% url 'add_bill' %}" method="POST">
-      {% csrf_token %}
-      <input name="name" placeholder="Bill Name" required>
-      <input name="amount" type="number" step="0.01" placeholder="Amount" required>
-      <input type="date" name="due" required>
-      
-      <select name="is_monthly">
-        <option value="false">One-Time Bill</option>
-        <option value="true">Monthly Recurring</option>
-      </select>
-      
-      <div>
-        <button type="submit" class="addBtn">Add Bill</button>
+  <div class="content-grid">
+
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Add Bill</h3>
       </div>
-    </form>
-  </div>
+      <form action="{% url 'add_bill' %}" method="POST">
+        {% csrf_token %}
+        <input name="name" placeholder="Bill Name" required>
+        <input name="amount" type="number" step="0.01" placeholder="Amount" required>
+        
+        <span style="font-size:12px; color:#8aa3bd; display:block; margin-top:12px;">First Due Date</span>
+        <input type="date" name="due" style="margin-top:4px;" required>
+        
+        <select name="is_monthly" id="isMonthly" onchange="toggleEndDate()">
+          <option value="false">One-Time Bill</option>
+          <option value="true">Monthly Recurring</option>
+        </select>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h3>All Bills</h3>
-      <span>Live DB Sync</span>
-    </div>
-
-    <input id="search" placeholder="Search..." onkeyup="filterBills()">
-    
-    <div id="list">
-      {% for b in bills %}
-        <div class="bill-item search-item">
-          <div class="bill-top">
-            <div>
-              <strong class="bill-name">{{ b.name }}</strong><br>
-              <span class="small">
-                Due: {{ b.due_date|date:"Y-m-d" }}
-                {% if b.is_monthly %}
-                  <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong>
-                {% endif %}
-              </span>
-            </div>
-            <div>
-              <strong>₱{{ b.amount }}</strong><br>
-              <span class="{{ b.status }}">{{ b.status }}</span>
-            </div>
-          </div>
-
-          <div class="button-group">
-            <form action="{% url 'update_bill' b.id 'Paid' %}" method="POST">
-              {% csrf_token %}<button type="submit" class="paidBtn">Paid</button>
-            </form>
-
-            <form action="{% url 'update_bill' b.id 'Unpaid' %}" method="POST">
-              {% csrf_token %}<button type="submit" class="unpaidBtn">Unpaid</button>
-            </form>
-
-            <form action="{% url 'update_bill' b.id 'Overdue' %}" method="POST">
-              {% csrf_token %}<button type="submit" class="overdueBtn">Overdue</button>
-            </form>
-
-            <form action="{% url 'delete_bill' b.id %}" method="POST">
-              {% csrf_token %}<button type="submit" class="deleteBtn">Delete</button>
-            </form>
-          </div>
+        <div id="endDateDiv" style="display:none; margin-top:12px;">
+          <span style="font-size:12px; color:#8aa3bd; display:block;">Ends On (Leave blank for Indefinite)</span>
+          <input type="date" name="end_date" style="margin-top:4px;">
         </div>
-      {% empty %}
-        <p style="color: #8aa3bd; margin-top: 15px;">No bills found.</p>
-      {% endfor %}
+
+        <select name="category">
+          <option value="Utilities">Utilities</option>
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Health">Health</option>
+          <option value="Miscellaneous">Miscellaneous</option>
+        </select>
+        
+        <div>
+          <button type="submit" class="addBtn">Add Bill</button>
+        </div>
+      </form>
     </div>
 
-  </div>
+    <div class="panel">
+      <div class="panel-header">
+        <h3>All Bills</h3>
+        <span>Live DB Sync</span>
+      </div>
 
-</div>
+      <input id="search" placeholder="Search..." onkeyup="filterBills()">
+      
+      <div id="list">
+        {% for b in bills %}
+          <div class="bill-item search-item">
+            <div class="bill-top">
+              <div>
+                <strong class="bill-name">{{ b.name }}</strong><br>
+                <span class="small">
+                  Due: {{ b.due_date|date:"Y-m-d" }}
+                  {% if b.is_monthly %}
+                    <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong>
+                  {% endif %}
+                </span>
+              </div>
+              <div>
+                <strong>₱{{ b.amount }}</strong><br>
+                <span class="{{ b.status }}">{{ b.status }}</span>
+              </div>
+            </div>
+
+            <div class="button-group">
+              <form action="{% url 'update_bill' b.id 'Paid' %}" method="POST">
+                {% csrf_token %}<button type="submit" class="paidBtn">Paid</button>
+              </form>
+
+              <form action="{% url 'update_bill' b.id 'Unpaid' %}" method="POST">
+                {% csrf_token %}<button type="submit" class="unpaidBtn">Unpaid</button>
+              </form>
+
+              <form action="{% url 'update_bill' b.id 'Overdue' %}" method="POST">
+                {% csrf_token %}<button type="submit" class="overdueBtn">Overdue</button>
+              </form>
+
+              <form action="{% url 'delete_bill' b.id %}" method="POST">
+                {% csrf_token %}<button type="submit" class="deleteBtn">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% empty %}
+          <p style="color: #8aa3bd; margin-top: 15px;">No bills found.</p>
+        {% endfor %}
+      </div>
+
+    </div>
+
+  </div> </div>
 
 <script>
+/* =========================
+   TOGGLE END DATE VISIBILITY
+========================= */
+function toggleEndDate() {
+  const isMonthly = document.getElementById("isMonthly").value;
+  const endDateDiv = document.getElementById("endDateDiv");
+  
+  if (isMonthly === 'true') {
+    endDateDiv.style.display = 'block';
+  } else {
+    endDateDiv.style.display = 'none';
+  }
+}
+
 /* =========================
    LIVE DOM SEARCH FILTER
 ========================= */

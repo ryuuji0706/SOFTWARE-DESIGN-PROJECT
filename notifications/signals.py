@@ -7,22 +7,31 @@ from .models import Reminder
 def create_reminder(sender, instance, created, **kwargs):
     """
     Fires every time a Bill is saved. 
-    Creates the linked Reminder record automatically.
+    If created: makes a new reminder.
+    If updated to Paid: marks the reminder as Completed!
     """
-    # If the bill was just created (not just updated)
     if created:
-        # We use the bill's due_date as the reminder_date 
         reminder_date = getattr(instance, 'reminder_date', instance.due_date)
-        
         Reminder.objects.create(
             user=instance.user,
-            # If your Reminder model has a ForeignKey to Bill, uncomment the next line:
-            # bill=instance, 
             name=f"Pay {instance.name}",
             amount=instance.amount,
-            status='Unpaid', # This matches the filter in your Dashboard!
-            # remind_on=reminder_date  <-- Use this if your model has a remind_on/reminder_date field
+            status='Unpaid',
         )
+    else:
+        # If the bill was just updated to 'Paid'
+        if instance.status == 'Paid':
+            # Find the oldest Unpaid reminder with this exact name
+            reminder = Reminder.objects.filter(
+                user=instance.user,
+                name=f"Pay {instance.name}",
+                status='Unpaid'
+            ).first()
+            
+            # If we found it, mark it as Completed!
+            if reminder:
+                reminder.status = 'Completed'
+                reminder.save()
         
 # --- ADD THIS NEW CLEANUP SIGNAL ---
 @receiver(post_delete, sender=Bill)

@@ -7,7 +7,6 @@
 <title>CashFlow - Transactions</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* KEEP ALL YOUR EXISTING CSS EXACTLY AS IT WAS */
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
 body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; }
 .sidebar{ width:240px; background:#041527; color:white; padding:20px 15px; }
@@ -19,15 +18,21 @@ body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidde
 .main-content{ flex:1; padding:25px; background:#081d33; color:white; overflow-y:auto; }
 .topbar{ display:flex; justify-content:space-between; margin-bottom:25px; }
 .cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:20px; }
-.card{ background:#102743; padding:20px; border-radius:14px; }
+.card{ background:#102743; padding:20px; border-radius:14px; border-left:3px solid #2aa8ff; }
 .panel{ background:#102743; padding:20px; border-radius:14px; margin-bottom:20px; }
-input,select{ width:100%; padding:12px; margin-top:12px; border:none; border-radius:8px; background:#071b2f; color:white; outline:none; }
-button{ margin-top:15px; width:100%; padding:12px; border:none; border-radius:8px; background:#00d2a0; font-weight:600; cursor:pointer; }
+
+input,select{ width:100%; padding:12px; margin-top:12px; border:none; border-radius:8px; background:#071b2f; color:white; outline:none; cursor:pointer; }
+select option { background:#071b2f; color:white; }
+button.add-btn { margin-top:15px; width:100%; padding:12px; border:none; border-radius:8px; background:#2aa8ff; color:white; font-weight:600; cursor:pointer; }
+
 .transaction{ padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
-.top{ display:flex; justify-content:space-between; }
+.top{ display:flex; justify-content:space-between; align-items:center; }
 .income{color:#00d2a0;font-weight:600;}
 .expense{color:#ff5c5c;font-weight:600;}
 .small{font-size:12px;color:#8aa3bd;}
+
+.delete-btn { background:#444; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; margin-top:5px; }
+.delete-btn:hover { background:#ff5c5c; }
 </style>
 </head>
 
@@ -54,22 +59,26 @@ button{ margin-top:15px; width:100%; padding:12px; border:none; border-radius:8p
 <div class="main-content">
 
 <div class="topbar">
-  <h2>Transactions</h2>
-  <span id="username">{{ request.user.username|default:"User" }}</span>
+  <div>
+    <h2>Transactions</h2>
+    <p style="color:#8aa3bd; font-size:13px;">Manage your daily income and expenses</p>
+  </div>
+  <span id="username" style="display:flex; align-items:center; gap:10px;">
+    <div style="width:38px; height:38px; border-radius:50%; background:#2aa8ff;"></div>
+    {{ request.user.username|default:"User" }}
+  </span>
 </div>
 
 <div class="cards">
-  <div class="card">
+  <div class="card" style="border-left-color:#00d2a0;">
     <h4>Income</h4>
     <h2 id="income">₱{{ total_income|floatformat:2 }}</h2>
   </div>
-
-  <div class="card">
+  <div class="card" style="border-left-color:#ff5c5c;">
     <h4>Expense</h4>
     <h2 id="expense">₱{{ total_expense|floatformat:2 }}</h2>
   </div>
-
-  <div class="card">
+  <div class="card" style="border-left-color:#2aa8ff;">
     <h4>Net</h4>
     <h2 id="net">₱{{ net|floatformat:2 }}</h2>
   </div>
@@ -83,40 +92,72 @@ button{ margin-top:15px; width:100%; padding:12px; border:none; border-radius:8p
     <input name="desc" placeholder="Description" required>
     <input name="amount" type="number" step="0.01" placeholder="Amount" required>
 
-    <select name="type">
+    <select name="type" id="txnType" onchange="toggleCategory()">
       <option value="INCOME">Income</option>
       <option value="EXPENSE">Expense</option>
     </select>
 
-    <button type="submit">Add Transaction</button>
+    <select name="category" id="catSelect" style="display:none;">
+      <option value="Food">Food</option>
+      <option value="Transport">Transport</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Health">Health</option>
+      <option value="Miscellaneous" selected>Miscellaneous</option>
+    </select>
+
+    <button type="submit" class="add-btn">Add Transaction</button>
   </form>
 </div>
 
 <div class="panel">
   <h3>History</h3>
   <div id="list">
-    
     {% for t in transactions %}
       <div class="transaction">
         <div class="top">
           <div>
             <b>{{ t.description }}</b><br>
-            <span class="small">{{ t.get_type_display }}</span>
+            <span class="small">
+              {{ t.get_type_display }} 
+              {% if t.type == 'EXPENSE' %} | {{ t.category }}{% endif %} 
+              | {{ t.transaction_date|date:"M d, Y" }}
+            </span>
           </div>
 
-          <div class="{% if t.type == 'INCOME' %}income{% else %}expense{% endif %}">
-            ₱{{ t.amount }}
+          <div style="text-align: right;">
+            <div class="{% if t.type == 'INCOME' %}income{% else %}expense{% endif %}">
+              {% if t.type == 'INCOME' %}+{% else %}-{% endif %}₱{{ t.amount }}
+            </div>
+            <form action="{% url 'delete_transaction' t.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="delete-btn">Delete</button>
+            </form>
           </div>
         </div>
       </div>
     {% empty %}
-      <small>No transactions yet.</small>
+      <small style="color:#8aa3bd;">No transactions yet.</small>
     {% endfor %}
-
   </div>
 </div>
 
 </div>
+
+<script>
+// Automatically shows/hides the Category dropdown based on Income/Expense selection
+function toggleCategory() {
+  const typeSelect = document.getElementById("txnType").value;
+  const catSelect = document.getElementById("catSelect");
+  if (typeSelect === "EXPENSE") {
+    catSelect.style.display = "block";
+  } else {
+    catSelect.style.display = "none";
+  }
+}
+// Run it once on page load just in case!
+window.onload = toggleCategory;
+</script>
 
 </body>
 </html>

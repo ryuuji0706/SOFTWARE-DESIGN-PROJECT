@@ -15,27 +15,62 @@
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
 body{ background:#071b2f; height:100vh; overflow:hidden; }
 .container{ display:flex; height:100vh; }
-.sidebar{ width:220px; background:#041527; color:white; padding:18px; }
+
+/* FIX: flex-shrink: 0 forces the sidebar to stay exactly 240px wide! */
+.sidebar{ 
+  width:240px; 
+  flex-shrink: 0; 
+  background:#041527; 
+  color:white; 
+  padding:20px; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:space-between; 
+}
+
 .logo h2{color:#00d2a0;}
 .logo span{font-size:12px;color:#8aa3bd;}
-.menu{ list-style:none; margin-top:15px; }
-.menu li{ padding:12px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:13px; }
+.menu{ list-style:none; margin-top:25px; }
+/* Added white-space: nowrap to prevent text from wrapping weirdly */
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:14px; white-space: nowrap; transition: 0.3s;}
 .menu li:hover, .menu .active{ background:#0b2844; color:white; }
-.main{ flex:1; padding:20px; overflow-y:auto; color:white; }
-.topbar{ display:flex; justify-content:space-between; margin-bottom:15px; }
-.cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:15px; }
-.card{ background:#102743; padding:15px; border-radius:12px; }
-.grid{ display:grid; grid-template-columns:2fr 1fr; gap:15px; }
-.panel{ background:#102743; padding:15px; border-radius:12px; }
+
+/* NEW: Sidebar Bottom User Profile & Logout Styles */
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.sidebar-user span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn { 
+  width: 100%; 
+  background: rgba(255, 92, 92, 0.1); 
+  color: #ff5c5c; 
+  border: 1px solid rgba(255, 92, 92, 0.2); 
+  padding: 10px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  font-weight: 500; 
+}
+.logout-btn:hover { background: #ff5c5c; color: white; }
+
+.main{ flex:1; padding:25px; overflow-y:auto; color:white; }
+/* We removed the user elements from the topbar, so just keep it simple */
+.topbar{ display:flex; justify-content:space-between; margin-bottom:25px; align-items: center;}
+.topbar h2 { font-size: 28px; }
+
+.cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+.card{ background:#102743; padding:20px; border-radius:12px; border-left:3px solid #2aa8ff; }
+.card h4 { font-size: 13px; color: #8aa3bd; font-weight: 500; margin-bottom: 5px;}
+.card h2 { font-size: 26px; }
+
+.grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
+
+.panel{ background:#102743; padding:20px; border-radius:12px; }
+.panel h3 { margin-bottom: 20px; font-size: 16px; }
 .category-item{ margin-bottom:14px; }
-.category-label{ display:flex; justify-content:space-between; font-size:13px; }
+.category-label{ display:flex; justify-content:space-between; font-size:13px; margin-bottom: 6px; }
 .progress{ height:10px; background:#071b2f; border-radius:20px; overflow:hidden; }
 .progress-bar{ height:100%; border-radius:20px; }
-.food{background:#ff5c5c;}
-.transport{background:#2aa8ff;}
-.shopping{background:#8e44ad;}
-.health{background:#00d2a0;}
-.utilities{background:#ff9f2d;}
 canvas{ max-height:260px; }
 </style>
 </head>
@@ -60,6 +95,14 @@ canvas{ max-height:260px; }
       <li onclick="location.href='{% url 'reminders' %}'">Reminders</li>
     </ul>
   </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
+  </div>
 </div>
 
 <div class="main">
@@ -69,13 +112,14 @@ canvas{ max-height:260px; }
 </div>
 
 <div class="cards">
-  <div class="card"><h4>Income</h4><h2 id="income">₱{{ income|floatformat:2 }}</h2></div>
-  <div class="card"><h4>Expense</h4><h2 id="expense">₱{{ expense|floatformat:2 }}</h2></div>
-  <div class="card"><h4>Savings</h4><h2 id="savings">₱{{ savings|floatformat:2 }}</h2></div>
-  <div class="card"><h4>Rate</h4><h2 id="rate">{{ rate }}%</h2></div>
+  <div class="card" style="border-left-color:#00d2a0;"><h4>Income</h4><h2 id="income">₱{{ income|floatformat:2 }}</h2></div>
+  <div class="card" style="border-left-color:#ff5c5c;"><h4>Expense</h4><h2 id="expense">₱{{ expense|floatformat:2 }}</h2></div>
+  <div class="card" style="border-left-color:#2aa8ff;"><h4>Savings</h4><h2 id="savings">₱{{ savings|floatformat:2 }}</h2></div>
+  <div class="card" style="border-left-color:#8e44ad;"><h4>Rate</h4><h2 id="rate">{{ rate }}%</h2></div>
 </div>
 
 <div class="grid">
+  
   <div class="panel">
     <h3>Income vs Expense</h3>
     <canvas id="barChart"></canvas>
@@ -85,54 +129,71 @@ canvas{ max-height:260px; }
     <h3>Budget Monitoring</h3>
     <canvas id="pieChart"></canvas>
   </div>
-</div>
 
-<div class="panel" style="margin-top:15px;">
-  <h3>Expense Breakdown</h3>
-  
-  <div id="categories">
+  <div class="panel">
+    <h3>Expense Breakdown</h3>
     
-    <div class="category-item">
-      <div class="category-label"><span>Food</span><span>₱{{ food }}</span></div>
-      <div class="progress"><div class="progress-bar" style="width: {% widthratio food max_cat 100 %}%; background:#00d2a0"></div></div>
-    </div>
+    <div id="categories">
+      
+      <div class="category-item">
+        <div class="category-label"><span>Food</span><span>₱{{ food|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio food max_cat 100 %}%; background:#ff5c5c"></div></div>
+      </div>
 
-    <div class="category-item">
-      <div class="category-label"><span>Transport</span><span>₱{{ transport }}</span></div>
-      <div class="progress"><div class="progress-bar" style="width: {% widthratio transport max_cat 100 %}%; background:#00d2a0"></div></div>
-    </div>
+      <div class="category-item">
+        <div class="category-label"><span>Transport</span><span>₱{{ transport|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio transport max_cat 100 %}%; background:#2aa8ff"></div></div>
+      </div>
 
-    <div class="category-item">
-      <div class="category-label"><span>Shopping</span><span>₱{{ shopping }}</span></div>
-      <div class="progress"><div class="progress-bar" style="width: {% widthratio shopping max_cat 100 %}%; background:#00d2a0"></div></div>
-    </div>
+      <div class="category-item">
+        <div class="category-label"><span>Shopping</span><span>₱{{ shopping|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio shopping max_cat 100 %}%; background:#8e44ad"></div></div>
+      </div>
 
-    <div class="category-item">
-      <div class="category-label"><span>Health</span><span>₱{{ health }}</span></div>
-      <div class="progress"><div class="progress-bar" style="width: {% widthratio health max_cat 100 %}%; background:#00d2a0"></div></div>
-    </div>
+      <div class="category-item">
+        <div class="category-label"><span>Health</span><span>₱{{ health|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio health max_cat 100 %}%; background:#00d2a0"></div></div>
+      </div>
 
-    <div class="category-item">
-      <div class="category-label"><span>Utilities</span><span>₱{{ utilities }}</span></div>
-      <div class="progress"><div class="progress-bar" style="width: {% widthratio utilities max_cat 100 %}%; background:#00d2a0"></div></div>
-    </div>
+      <div class="category-item">
+        <div class="category-label"><span>Utilities</span><span>₱{{ utilities|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio utilities max_cat 100 %}%; background:#ff9f2d"></div></div>
+      </div>
 
+      <div class="category-item">
+        <div class="category-label"><span>Miscellaneous</span><span>₱{{ miscellaneous|default:"0" }}</span></div>
+        <div class="progress"><div class="progress-bar" style="width: {% widthratio miscellaneous max_cat 100 %}%; background:#f368e0"></div></div>
+      </div>
+
+    </div>
   </div>
+
 </div>
 
 </div>
 </div>
 
 <script>
+Chart.defaults.color = '#8aa3bd'; 
+
 /* BAR CHART */
 let barChart = new Chart(document.getElementById("barChart"), {
   type:"bar",
   data:{
     labels:["Income","Expense"],
     datasets:[{
-      data:[{{ income }}, {{ expense }}],
-      backgroundColor:["#00d2a0","#ff5c5c"]
+      data:[{{ income|default:"0" }}, {{ expense|default:"0" }}],
+      backgroundColor:["#00d2a0","#ff5c5c"],
+      borderRadius: 6
     }]
+  },
+  options: {
+    plugins: { legend: { display: false } }, 
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+      x: { grid: { display: false } }
+    },
+    maintainAspectRatio: false
   }
 });
 
@@ -140,11 +201,18 @@ let barChart = new Chart(document.getElementById("barChart"), {
 let pieChart = new Chart(document.getElementById("pieChart"), {
   type:"pie",
   data:{
-    labels:["Food","Transport","Shopping","Health","Utilities"],
+    labels:["Food","Transport","Shopping","Health","Utilities", "Misc"],
     datasets:[{
-      data:[{{ food }}, {{ transport }}, {{ shopping }}, {{ health }}, {{ utilities }}],
-      backgroundColor:["#ff5c5c","#2aa8ff","#8e44ad","#00d2a0","#ff9f2d"]
+      data:[{{ food|default:"0" }}, {{ transport|default:"0" }}, {{ shopping|default:"0" }}, {{ health|default:"0" }}, {{ utilities|default:"0" }}, {{ miscellaneous|default:"0" }}],
+      backgroundColor:["#ff5c5c","#2aa8ff","#8e44ad","#00d2a0","#ff9f2d", "#f368e0"],
+      borderWidth: 0 
     }]
+  },
+  options: {
+    plugins: {
+      legend: { position: 'bottom' }
+    },
+    maintainAspectRatio: false
   }
 });
 </script>
