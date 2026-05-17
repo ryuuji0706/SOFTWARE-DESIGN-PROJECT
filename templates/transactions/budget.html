@@ -9,33 +9,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* KEEP ALL YOUR EXISTING CSS EXACTLY AS IT WAS */
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
 body{ background:#071b2f; height:100vh; overflow:hidden; }
 .container{ display:flex; height:100vh; }
-.sidebar{ width:240px; background:#041527; color:white; padding:20px; display:flex; flex-direction:column; justify-content:space-between; }
+
+/* FIX: flex-shrink: 0 forces the sidebar to stay exactly 240px wide! */
+.sidebar{ 
+  width:240px; 
+  flex-shrink: 0; 
+  background:#041527; 
+  color:white; 
+  padding:20px; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:space-between; 
+}
+
 .logo h2{color:#00d2a0;}
 .logo span{font-size:12px;color:#8aa3bd;}
-.menu{ list-style:none; margin-top:20px; }
-.menu li{ padding:12px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; }
+.menu{ list-style:none; margin-top:25px; }
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:14px; white-space: nowrap; transition: 0.3s;}
 .menu li:hover, .menu .active{ background:#0b2844; color:white; }
+
+/* NEW: Sidebar Bottom User Profile & Logout Styles */
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.sidebar-user span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn { 
+  width: 100%; 
+  background: rgba(255, 92, 92, 0.1); 
+  color: #ff5c5c; 
+  border: 1px solid rgba(255, 92, 92, 0.2); 
+  padding: 10px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  font-weight: 500; 
+}
+.logout-btn:hover { background: #ff5c5c; color: white; }
+
 .main{ flex:1; padding:25px; overflow-y:auto; color:white; }
 .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
 select{ padding:10px; border-radius:8px; border:none; background:#102743; color:white; }
+select option { background:#071b2f; color:white; }
 button{ padding:10px 14px; border:none; border-radius:8px; background:#00d2a0; color:#06251d; cursor:pointer; font-weight:600; }
+
 .cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom:20px; }
 .card{ background:#102743; padding:18px; border-radius:12px; }
 .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
 .cat{ background:#102743; padding:18px; border-radius:12px; }
+
 .progress{ height:10px; background:#071b2f; border-radius:20px; overflow:hidden; margin-top:10px; }
 .bar{height:100%;border-radius:20px;}
 .good{background:#00d2a0;}
 .warn{background:#ffb020;}
 .bad{background:#ff4040;}
 .suggest{ margin-top:10px; font-size:12px; color:#8aa3bd; }
+
 .modal{ position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index: 1000; }
 .modal-content{ width:350px; background:#102743; padding:20px; border-radius:12px; }
-.modal-content input, .modal-content select{ width:100%; padding:10px; margin-top:10px; border:none; border-radius:8px; background:#071b2f; color:white; }
+.modal-content input, .modal-content select{ width:100%; padding:10px; margin-top:10px; border:none; border-radius:8px; background:#071b2f; color:white; outline:none;}
 </style>
 </head>
 
@@ -60,8 +94,12 @@ button{ padding:10px 14px; border:none; border-radius:8px; background:#00d2a0; c
     </ul>
   </div>
 
-  <div style="color:#8aa3bd;font-size:12px">
-    <div id="user">{{ request.user.username|default:"User" }}</div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
   </div>
 </div>
 
@@ -95,9 +133,9 @@ button{ padding:10px 14px; border:none; border-radius:8px; background:#00d2a0; c
 </div>
 
 <div class="cards">
-  <div class="card"><h3>Good</h3><h2 id="good">{{ good }}</h2></div>
-  <div class="card"><h3>Warning</h3><h2 id="warn">{{ warn }}</h2></div>
-  <div class="card"><h3>Over</h3><h2 id="bad">{{ bad }}</h2></div>
+  <div class="card" style="border-left: 3px solid #00d2a0;"><h3>Good</h3><h2 id="good">{{ good }}</h2></div>
+  <div class="card" style="border-left: 3px solid #ffb020;"><h3>Warning</h3><h2 id="warn">{{ warn }}</h2></div>
+  <div class="card" style="border-left: 3px solid #ff4040;"><h3>Over</h3><h2 id="bad">{{ bad }}</h2></div>
 </div>
 
 <div class="grid" id="grid">
@@ -143,7 +181,6 @@ button{ padding:10px 14px; border:none; border-radius:8px; background:#00d2a0; c
 </div>
 
 <script>
-/* Simple JS just to handle opening/closing the modal window */
 function openModal(){
   document.getElementById("modal").style.display="flex";
 }
@@ -152,7 +189,6 @@ function closeModal(){
   document.getElementById("modal").style.display="none";
 }
 
-// Close if clicked outside the box
 window.onclick = (e)=>{
   if(e.target.id==="modal"){
     closeModal();

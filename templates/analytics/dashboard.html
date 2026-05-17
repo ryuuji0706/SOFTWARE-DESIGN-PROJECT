@@ -15,13 +15,41 @@
 
 body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; }
 
-/* SIDEBAR */
-.sidebar{ width:240px; background:#041527; color:white; display:flex; flex-direction:column; justify-content:space-between; padding:20px 15px; }
+/* FIX: flex-shrink: 0 forces the sidebar to stay exactly 240px wide! */
+.sidebar{ 
+  width:240px; 
+  flex-shrink: 0; 
+  background:#041527; 
+  color:white; 
+  padding:20px; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:space-between; 
+}
+
 .logo h2{ font-size:24px; color:#00d2a0; }
 .logo span{ font-size:12px; color:#8aa3bd; }
-.menu{ list-style:none; margin-top:20px; }
-.menu li{ padding:14px 16px; margin-bottom:10px; border-radius:10px; cursor:pointer; transition:0.3s; color:#9db2c8; font-size:14px; }
+.menu{ list-style:none; margin-top:25px; }
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:14px; white-space: nowrap; transition: 0.3s;}
 .menu li:hover, .menu .active{ background:#0b2844; color:white; }
+
+/* NEW: Sidebar Bottom User Profile & Logout Styles */
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.sidebar-user span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn { 
+  width: 100%; 
+  background: rgba(255, 92, 92, 0.1); 
+  color: #ff5c5c; 
+  border: 1px solid rgba(255, 92, 92, 0.2); 
+  padding: 10px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  font-weight: 500; 
+}
+.logout-btn:hover { background: #ff5c5c; color: white; }
 
 /* MAIN */
 .main-content{ flex:1; padding:25px; background:#081d33; color:white; overflow-y:auto; }
@@ -30,14 +58,11 @@ body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidde
 .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
 .topbar h1{ font-size:28px; }
 .topbar p{ color:#8aa3bd; font-size:13px; }
-.user{ display:flex; align-items:center; gap:10px; }
-.user-circle{ width:38px; height:38px; border-radius:50%; background:#00d2a0; }
-.logout-btn{ background:#ff5c5c; border:none; padding:10px 14px; border-radius:8px; color:white; cursor:pointer; }
 
 /* CARDS */
 .cards { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:15px; }
 .card{ background:#102743; padding:20px; border-radius:14px; border-left:3px solid #00d2a0; }
-.card h3{ font-size:13px; color:#8aa3bd; }
+.card h3{ font-size:13px; color:#8aa3bd; margin-bottom: 5px; }
 .card h2{ font-size:26px; }
 
 /* GRID */
@@ -72,10 +97,17 @@ small{ color:#8aa3bd; }
       <li onclick="location.href='{% url 'bills' %}'">Bills</li>
       <li onclick="location.href='{% url 'transaction_list' %}'">Transactions</li>
       <li onclick="location.href='{% url 'summary' %}'">Analytics</li>
-      
       <li onclick="location.href='{% url 'budget' %}'">Budget</li>
       <li onclick="location.href='{% url 'reminders' %}'">Reminders</li>
     </ul>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
   </div>
 </div>
 
@@ -85,12 +117,6 @@ small{ color:#8aa3bd; }
     <div>
       <h1>Dashboard</h1>
       <p>Real-time financial overview</p>
-    </div>
-
-    <div class="user">
-      <div class="user-circle"></div>
-      <span id="username">{{ request.user.username|default:"User" }}</span>
-      <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
     </div>
   </div>
 
@@ -257,13 +283,11 @@ small{ color:#8aa3bd; }
   function openModal(type) {
     document.getElementById('billModal').style.display = 'flex';
     
-    // Hide all lists first
     document.getElementById('list-all').style.display = 'none';
     document.getElementById('list-paid').style.display = 'none';
     document.getElementById('list-unpaid').style.display = 'none';
     document.getElementById('list-overdue').style.display = 'none'; 
 
-    // Show the correct list and update title
     if (type === 'all') {
         document.getElementById('list-all').style.display = 'block';
         document.getElementById('modalTitle').innerText = 'All Bills';
@@ -283,7 +307,6 @@ small{ color:#8aa3bd; }
     document.getElementById('billModal').style.display = 'none';
   }
 
-  // Close modal if user clicks the dark background outside of it
   window.onclick = function(event) {
     const modal = document.getElementById('billModal');
     if (event.target === modal) {

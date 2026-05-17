@@ -10,22 +10,51 @@
 <style>
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
 body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; }
-.sidebar{ width:240px; background:#041527; color:white; display:flex; flex-direction:column; justify-content:space-between; padding:20px 15px; }
+
+/* FIX: flex-shrink: 0 forces the sidebar to stay exactly 240px wide! */
+.sidebar{ 
+  width:240px; 
+  flex-shrink: 0; 
+  background:#041527; 
+  color:white; 
+  padding:20px; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:space-between; 
+}
+
 .logo h2{ color:#00d2a0; font-size:24px; }
 .logo span{ font-size:12px; color:#8aa3bd; }
-.menu{ list-style:none; margin-top:20px; }
-.menu li{ padding:14px 16px; margin-bottom:10px; border-radius:10px; cursor:pointer; transition:0.3s; color:#9db2c8; font-size:14px; }
+.menu{ list-style:none; margin-top:25px; }
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; transition:0.3s; color:#9db2c8; font-size:14px; white-space: nowrap; }
 .menu li:hover, .menu .active{ background:#0b2844; color:white; }
+
+/* NEW: Sidebar Bottom User Profile & Logout Styles */
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.sidebar-user span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn { 
+  width: 100%; 
+  background: rgba(255, 92, 92, 0.1); 
+  color: #ff5c5c; 
+  border: 1px solid rgba(255, 92, 92, 0.2); 
+  padding: 10px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  font-weight: 500; 
+}
+.logout-btn:hover { background: #ff5c5c; color: white; }
+
 .main-content{ flex:1; padding:25px; background:#081d33; color:white; overflow-y:auto; }
 .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
 .topbar h1{ font-size:28px; }
 .topbar p{ color:#8aa3bd; font-size:13px; }
-.user{ display:flex; align-items:center; gap:10px; }
-.user-circle{ width:38px; height:38px; border-radius:50%; background:#00d2a0; }
+
 .cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:20px; }
 .card{ background:#102743; padding:22px; border-radius:14px; border-left:3px solid #00d2a0; }
 
-/* NEW: Grid for side-by-side layout */
 .content-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: flex-start; }
 
 .panel{ background:#102743; border-radius:14px; padding:20px; margin-bottom:20px; }
@@ -79,6 +108,14 @@ form { display: inline; }
       <li onclick="location.href='{% url 'reminders' %}'">Reminders</li>
     </ul>
   </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
+  </div>
 </div>
 
 <div class="main-content">
@@ -86,10 +123,6 @@ form { display: inline; }
     <div>
       <h1>Bills Management</h1>
       <p>Real-time synchronized system</p>
-    </div>
-    <div class="user">
-      <div class="user-circle"></div>
-      <span id="username">{{ request.user.username|default:"User" }}</span>
     </div>
   </div>
 
@@ -191,12 +224,11 @@ form { display: inline; }
 
     </div>
 
-  </div> </div>
+  </div> 
+
+</div>
 
 <script>
-/* =========================
-   TOGGLE END DATE VISIBILITY
-========================= */
 function toggleEndDate() {
   const isMonthly = document.getElementById("isMonthly").value;
   const endDateDiv = document.getElementById("endDateDiv");
@@ -208,9 +240,6 @@ function toggleEndDate() {
   }
 }
 
-/* =========================
-   LIVE DOM SEARCH FILTER
-========================= */
 function filterBills() {
   const searchInput = document.getElementById("search").value.toLowerCase();
   const billItems = document.querySelectorAll(".search-item");

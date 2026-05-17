@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>CashFlow - Reminders</title>
 
@@ -10,21 +10,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* KEEP ALL EXISTING CSS EXACTLY AS IT WAS */
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
 body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; }
-.sidebar{ width:240px; background:#041527; color:white; display:flex; flex-direction:column; justify-content:space-between; padding:20px 15px; }
+
+/* FIX: flex-shrink: 0 forces the sidebar to stay exactly 240px wide! */
+.sidebar{ 
+  width:240px; 
+  flex-shrink: 0; 
+  background:#041527; 
+  color:white; 
+  padding:20px; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:space-between; 
+}
+
 .logo h2{ font-size:24px; color:#00d2a0; }
 .logo span{ font-size:12px; color:#8aa3bd; }
-.menu{ list-style:none; margin-top:20px; }
-.menu li{ padding:14px 16px; margin-bottom:10px; border-radius:10px; cursor:pointer; color:#9db2c8; font-size:14px; }
+.menu{ list-style:none; margin-top:25px; }
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:14px; white-space: nowrap; transition: 0.3s;}
 .menu li:hover, .menu .active{ background:#0b2844; color:white; }
+
+/* NEW: Sidebar Bottom User Profile & Logout Styles */
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.sidebar-user span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn { 
+  width: 100%; 
+  background: rgba(255, 92, 92, 0.1); 
+  color: #ff5c5c; 
+  border: 1px solid rgba(255, 92, 92, 0.2); 
+  padding: 10px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  font-weight: 500; 
+}
+.logout-btn:hover { background: #ff5c5c; color: white; }
+
 .main-content{ flex:1; padding:25px; background:#081d33; color:white; overflow-y:auto; }
 .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
 .topbar h1{ font-size:28px; }
 .topbar p{ color:#8aa3bd; font-size:13px; }
-.user{ display:flex; align-items:center; gap:10px; }
-.user-circle{ width:38px; height:38px; border-radius:50%; background:#00d2a0; }
+
 .cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:20px; }
 .card{ background:#102743; padding:20px; border-radius:14px; border-left:3px solid #00d2a0; }
 .content-grid{ display:grid; grid-template-columns:2fr 1fr; gap:20px; }
@@ -55,6 +84,14 @@ small{ color:#8aa3bd; }
       <li class="active">Reminders</li>
     </ul>
   </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
+  </div>
 </div>
 
 <div class="main-content">
@@ -64,11 +101,6 @@ small{ color:#8aa3bd; }
       <h1>Reminders</h1>
       <p>Overdue + Manual + Real-time DB Sync</p>
     </div>
-
-    <div class="user">
-      <div class="user-circle"></div>
-      <span id="username">{{ request.user.username|default:"User" }}</span>
-    </div>
   </div>
 
   <div class="cards">
@@ -77,12 +109,12 @@ small{ color:#8aa3bd; }
       <h2 id="pending">{{ pending }}</h2>
     </div>
 
-    <div class="card">
+    <div class="card" style="border-left-color: #ff5c5c;">
       <h3>Overdue</h3>
       <h2 id="overdue">{{ overdue }}</h2>
     </div>
 
-    <div class="card">
+    <div class="card" style="border-left-color: #2aa8ff;">
       <h3>Completed</h3>
       <h2 id="done">{{ done }}</h2>
     </div>
@@ -103,7 +135,7 @@ small{ color:#8aa3bd; }
               <strong>{{ r.name }}</strong>
               <span>{% if r.amount %}₱{{ r.amount }}{% endif %}</span>
             </div>
-            <small style="{% if r.status == 'Completed' %}color:#00d2a0;{% endif %}">{{ r.status }}</small>
+            <small style="{% if r.status == 'Completed' %}color:#00d2a0;{% elif r.status == 'Unpaid' %}color:#ffb020;{% endif %}">{{ r.status }}</small>
           </div>
         {% empty %}
           <small>No manual reminders yet. Add some in the Admin Panel!</small>
@@ -123,7 +155,12 @@ small{ color:#8aa3bd; }
               <strong>{{ b.name }}</strong>
               <span>₱{{ b.amount }}</span>
             </div>
-            <small class="overdue">OVERDUE</small>
+            <small class="overdue">
+              OVERDUE
+              {% if b.is_monthly %}
+                <strong style="color: #2aa8ff; margin-left: 5px;">(Monthly)</strong>
+              {% endif %}
+            </small>
           </div>
         {% empty %}
           <small>No overdue bills! You are all caught up.</small>
