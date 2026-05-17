@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow - Edit Bill</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+body{ width:100%; height:100vh; background:#071b2f; display:flex; overflow:hidden; justify-content: center; align-items: center; }
+
+.panel{ background:#102743; border-radius:14px; padding:30px; width: 400px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.panel-header{ margin-bottom:20px; text-align: center; }
+.panel-header h3 { font-size: 24px; color: #00d2a0; }
+.panel-header p { color: #8aa3bd; font-size: 13px; }
+
+input, select { 
+    width:100%; 
+    padding:12px; 
+    margin-top:12px; 
+    border:none; 
+    border-radius:8px; 
+    background:#071b2f; 
+    color:white; 
+    outline:none; 
+}
+select option { background: #071b2f; color: white; }
+
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+button{ flex: 1; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.saveBtn{ background:#2aa8ff; color:white; }
+.cancelBtn{ background:#444; color:white; text-decoration: none; text-align: center; font-size: 14px; display: flex; align-items: center; justify-content: center;}
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <div class="panel-header">
+    <h3>Edit Bill</h3>
+    <p>Update your bill details</p>
+  </div>
+  
+  <form method="POST">
+    {% csrf_token %}
+    <label style="font-size:12px; color:#8aa3bd;">Bill Name</label>
+    <input name="name" value="{{ bill.name }}" required>
+    
+    <label style="font-size:12px; color:#8aa3bd; display:block; margin-top:10px;">Amount (₱)</label>
+    <input name="amount" type="number" step="0.01" value="{{ bill.amount }}" required>
+    
+    <label style="font-size:12px; color:#8aa3bd; display:block; margin-top:10px;">Due Date</label>
+    <input type="date" name="due" value="{{ bill.due_date|date:'Y-m-d' }}" required>
+    
+    <div class="btn-group">
+      <a href="{% url 'bills' %}" class="cancelBtn">Cancel</a>
+      <button type="submit" class="saveBtn">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>

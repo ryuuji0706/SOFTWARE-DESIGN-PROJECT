@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CashFlow - Smart Insights</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+body{ background:#071b2f; height:100vh; overflow:hidden; }
+.container{ display:flex; height:100vh; }
+
+/* STANDARD SIDEBAR */
+.sidebar{ width:240px; flex-shrink: 0; background:#041527; color:white; padding:20px; display:flex; flex-direction:column; justify-content:space-between; }
+.logo h2{color:#00d2a0;}
+.logo span{font-size:12px;color:#8aa3bd;}
+.menu{ list-style:none; margin-top:25px; }
+.menu li{ padding:12px 16px; margin-bottom:8px; border-radius:8px; cursor:pointer; color:#9db2c8; font-size:14px; white-space: nowrap; transition: 0.3s;}
+.menu li:hover, .menu .active{ background:#0b2844; color:white; }
+.sidebar-bottom { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; color: white;}
+.user-circle { width: 38px; height: 38px; border-radius: 50%; background: #2aa8ff; flex-shrink: 0; }
+.logout-btn { width: 100%; background: rgba(255, 92, 92, 0.1); color: #ff5c5c; border: 1px solid rgba(255, 92, 92, 0.2); padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 500; }
+.logout-btn:hover { background: #ff5c5c; color: white; }
+
+.main{ flex:1; padding:25px; overflow-y:auto; color:white; }
+.topbar{ display:flex; justify-content:space-between; margin-bottom:25px; align-items: center;}
+.topbar h2 { font-size: 28px; }
+.topbar p { color: #8aa3bd; font-size: 13px; }
+
+/* INSIGHT CARDS */
+.insight-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.insight-card { background: #102743; padding: 25px; border-radius: 14px; position: relative; overflow: hidden; }
+.insight-card h3 { font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.insight-card p { color: #9db2c8; font-size: 14px; line-height: 1.6; }
+.icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
+
+/* SPECIFIC THEMES */
+.theme-blue .icon-box { background: rgba(42, 168, 255, 0.2); color: #2aa8ff; }
+.theme-blue { border-top: 4px solid #2aa8ff; }
+
+.theme-green .icon-box { background: rgba(0, 210, 160, 0.2); color: #00d2a0; }
+.theme-green { border-top: 4px solid #00d2a0; }
+
+.theme-purple .icon-box { background: rgba(142, 68, 173, 0.2); color: #8e44ad; }
+.theme-purple { border-top: 4px solid #8e44ad; }
+
+.theme-orange .icon-box { background: rgba(255, 159, 45, 0.2); color: #ff9f2d; }
+.theme-orange { border-top: 4px solid #ff9f2d; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+  <div>
+    <div class="logo">
+      <h2>CashFlow</h2>
+      <span>Smart Finance</span>
+    </div>
+
+    <ul class="menu">
+      <li onclick="location.href='{% url 'dashboard' %}'">Dashboard</li>
+      <li onclick="location.href='{% url 'bills' %}'">Bills</li>
+      <li onclick="location.href='{% url 'transaction_list' %}'">Transactions</li>
+      <li onclick="location.href='{% url 'summary' %}'">Analytics</li>
+      <li onclick="location.href='{% url 'budget' %}'">Budget</li>
+      <li onclick="location.href='{% url 'reminders' %}'">Reminders</li>
+      <li class="active">Insights</li>
+    </ul>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-circle"></div>
+      <span title="{{ request.user.username|default:'User' }}">{{ request.user.username|default:"User" }}</span>
+    </div>
+    <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+<div class="topbar">
+  <div>
+    <h2>Smart Insights</h2>
+    <p>Financial suggestions to optimize your CashFlow.</p>
+  </div>
+</div>
+
+<div class="insight-grid">
+
+    <div class="insight-card" style="border-top: 4px solid #f368e0; grid-column: 1 / -1; background: linear-gradient(145deg, #102743, #150924);">
+        <h3><div class="icon-box" style="background: rgba(243, 104, 224, 0.2); color: #f368e0;">✨</div> AI Smart Insight</h3>
+        <p style="color: #e2e8f0; font-size: 16px; font-style: italic; margin-top: 10px;">"{{ ai_tip }}"</p>
+    </div>
+  
+  <div class="insight-card theme-blue">
+    <h3><div class="icon-box">💡</div> The 50/30/20 Rule</h3>
+    <p>Consider dividing your income into three categories: 50% for <b>Needs</b> (bills, groceries), 30% for <b>Wants</b> (shopping, dining out), and 20% for <b>Savings or Debt payoff</b>. Check your Analytics page to see how your current spending aligns with this rule!</p>
+  </div>
+
+  <div class="insight-card theme-green">
+    <h3><div class="icon-box">🛡️</div> Build an Emergency Fund</h3>
+    <p>Aim to save at least 3 to 6 months' worth of living expenses. This acts as a financial safety net for unexpected events like medical emergencies or sudden appliance repairs. Start small by setting aside a fixed amount every payday.</p>
+  </div>
+
+  <div class="insight-card theme-purple">
+    <h3><div class="icon-box">⚡</div> Automate Your Savings</h3>
+    <p>Don't rely on willpower alone to save. Set up automatic transfers from your checking account to your savings account on the day you get paid. If you never see the money in your primary account, you are much less likely to spend it.</p>
+  </div>
+
+  <div class="insight-card theme-orange">
+    <h3><div class="icon-box">📅</div> Review Subscriptions</h3>
+    <p>Subscription fatigue is real. Take 10 minutes to review your monthly recurring bills. Cancel any streaming services, gym memberships, or software subscriptions that you haven't used in the last 60 days. Redirect that money into your savings!</p>
+  </div>
+
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

@@ -237,7 +237,7 @@ def budget_view(request):
     if selected_month != 'all':
         base_query = base_query.filter(transaction_date__month=int(selected_month) + 1)
 
-    # 1. SPECIFIC FILTERS: Added Shopping keywords so it is no longer the fallback!
+    # 1. SPECIFIC FILTERS: Pull directly from the database
     spent_data = {
         'Food': base_query.filter(category__category_name='Food').aggregate(total=Sum('amount'))['total'] or 0,
         'Transport': base_query.filter(category__category_name='Transport').aggregate(total=Sum('amount'))['total'] or 0,
@@ -247,17 +247,17 @@ def budget_view(request):
         'Miscellaneous': base_query.filter(category__category_name='Miscellaneous').aggregate(total=Sum('amount'))['total'] or 0,
     }
     
-    # 2. NEW FALLBACK: Miscellaneous takes whatever is left over!
-    total_expense = base_query.aggregate(total=Sum('amount'))['total'] or 0
-    misc_spent = total_expense - sum(spent_data.values())
-    spent_data['Miscellaneous'] = misc_spent if misc_spent > 0 else 0
+    # 2. BULLETPROOF FALLBACK: Query for any transaction that has NO category assigned
+    uncategorized_spent = base_query.filter(category__isnull=True).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # 3. Add those orphans into the Miscellaneous bucket!
+    spent_data['Miscellaneous'] += uncategorized_spent 
 
     categories_info = []
     g_count = w_count = b_count = 0
 
-    # 3. ADDED Miscellaneous to the loop list
     for cat_name in ['Food', 'Transport', 'Utilities', 'Shopping', 'Health', 'Miscellaneous']:
-        limit = user_budgets.get(cat_name, 1000) # Default to 1000 if not set
+        limit = user_budgets.get(cat_name, 1000)
         spent = spent_data[cat_name]
         percent = (spent / limit) * 100 if limit > 0 else 0
         
@@ -271,14 +271,34 @@ def budget_view(request):
             cls, label = "good", "Good"
             g_count += 1
 
-        if percent < 50: suggestion = "Good control"
-        elif cat_name == "Food": suggestion = "Cook at home"
-        elif cat_name == "Transport": suggestion = "Use public transport"
-        elif cat_name == "Utilities": suggestion = "Save electricity"
-        elif cat_name == "Shopping": suggestion = "Avoid impulse buying"
-        elif cat_name == "Health": suggestion = "Compare clinics"
-        elif cat_name == "Miscellaneous": suggestion = "Track hidden costs" # New suggestion!
-        else: suggestion = "Monitor spending"
+        # ==========================================
+        # SMART SUGGESTION LOGIC
+        # ==========================================
+        if percent < 50:
+            suggestion = "Great control! Keep it up."
+        elif percent < 85:
+            if cat_name == "Food": suggestion = "Getting high. Try cooking at home."
+            elif cat_name == "Transport": suggestion = "Consider carpooling or public transit."
+            elif cat_name == "Utilities": suggestion = "Watch your AC/Electricity usage."
+            elif cat_name == "Shopping": suggestion = "Hold off on impulse buying."
+            elif cat_name == "Health": suggestion = "Monitor pharmacy expenses."
+            elif cat_name == "Miscellaneous": suggestion = "Watch out for hidden costs."
+            else: suggestion = "Monitor spending closely."
+        else:
+            # CRITICAL WARNING: Find the single most expensive transaction in this category!
+            if cat_name == 'Miscellaneous':
+                # Catch both explicit "Miscellaneous" and uncategorized items
+                category_txns = base_query.filter(Q(category__category_name=cat_name) | Q(category__isnull=True))
+            else:
+                category_txns = base_query.filter(category__category_name=cat_name)
+                
+            top_expense = category_txns.order_by('-amount').first()
+            
+            if top_expense:
+                suggestion = f"⚠️ Cut back on: '{top_expense.description}' (₱{top_expense.amount})"
+            else:
+                suggestion = "⚠️ Critical: Stop spending in this category!"
+        # ==========================================
 
         categories_info.append({
             'name': cat_name,
