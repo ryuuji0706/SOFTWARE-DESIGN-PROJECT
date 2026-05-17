@@ -247,10 +247,12 @@ def budget_view(request):
         'Miscellaneous': base_query.filter(category__category_name='Miscellaneous').aggregate(total=Sum('amount'))['total'] or 0,
     }
     
-    # 2. NEW FALLBACK: Miscellaneous takes whatever is left over!
+# 2. NEW FALLBACK: Add any uncategorized leftovers to the Miscellaneous total
     total_expense = base_query.aggregate(total=Sum('amount'))['total'] or 0
-    misc_spent = total_expense - sum(spent_data.values())
-    spent_data['Miscellaneous'] = misc_spent if misc_spent > 0 else 0
+    uncategorized_spent = total_expense - sum(spent_data.values())
+    
+    # Notice the += here! This ADDS the leftovers instead of overwriting!
+    spent_data['Miscellaneous'] += uncategorized_spent if uncategorized_spent > 0 else 0
 
     categories_info = []
     g_count = w_count = b_count = 0
