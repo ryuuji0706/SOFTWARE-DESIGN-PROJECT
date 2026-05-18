@@ -16,7 +16,6 @@ def dashboard(request):
         'paid_bills': all_bills.filter(status='Paid').count(),
         'unpaid_bills': all_bills.filter(status='Unpaid').count(),
         
-        # 1. NEW: Add Overdue Count
         'overdue_bills': all_bills.filter(status='Overdue').count(), 
         
         'recent_bills': all_bills.order_by('-due_date')[:5],
@@ -25,7 +24,6 @@ def dashboard(request):
         'paid_bills_list': all_bills.filter(status='Paid'),
         'unpaid_bills_list': all_bills.filter(status='Unpaid'),
         
-        # 2. NEW: Add Overdue List for the Modal
         'overdue_bills_list': all_bills.filter(status='Overdue'), 
         
         'reminder_count': unpaid_reminders.count(),
@@ -75,7 +73,7 @@ def summary_view(request):
         'health': health,
         'utilities': utilities,
         'miscellaneous': miscellaneous,
-        'max_cat': max_cat, # CRITICAL for the progress bars!
+        'max_cat': max_cat, # CRITICAL for the progress bars
     }
     
     return render(request, 'analytics/analytics.html', context)

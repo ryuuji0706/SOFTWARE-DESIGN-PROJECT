@@ -35,7 +35,7 @@ def register_user(request):
         # 5. Send them to the dashboard!
         return redirect('dashboard')
 
-    return render(request, 'users/register.html') # Make sure this matches your folder structure!
+    return render(request, 'users/register.html')
 
 def login_user(request):
     # If they are already logged in, send them to the dashboard
@@ -43,7 +43,6 @@ def login_user(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        # Grab the username instead of the email
         username = request.POST.get('username')
         password = request.POST.get('password')
 

@@ -15,7 +15,6 @@ def add_one_month(orig_date):
     day = min(orig_date.day, calendar.monthrange(year, month)[1])
     return date(year, month, day)
 
-# ==========================================
 
 # ==========================================
 # BILLS VIEWS
@@ -43,10 +42,10 @@ def add_bill(request):
         is_monthly = request.POST.get('is_monthly') == 'true'
         category_name = request.POST.get('category')
         
-        # --- NEW: Catch the End Date ---
+        # --- Catch the End Date ---
         end_date_str = request.POST.get('end_date')
         end_date_obj = None
-        # Only convert to a date object if it's monthly AND they actually typed a date
+        # Only convert to a date object if it's monthly AND user actually typed a date
         if is_monthly and end_date_str:
             end_date_obj = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         # -------------------------------
@@ -74,7 +73,7 @@ def add_bill(request):
             status=status,
             is_monthly=is_monthly,
             category=cat_obj,
-            end_date=end_date_obj # <-- Save the end date!
+            end_date=end_date_obj # Save the end date
         )
         
     return redirect('bills')
@@ -102,12 +101,12 @@ def update_bill(request, bill_id, new_status):
             
             next_due_date = add_one_month(bill.due_date)
             
-            # --- NEW: THE END DATE KILL-SWITCH ---
-            # If this bill has an end date, AND the next due date is past it, DO NOT CLONE!
+            # --- THE END DATE KILL-SWITCH ---
+            # If this bill has an end date, AND the next due date is past it, DO NOT CLONE
             if bill.end_date and next_due_date > bill.end_date:
                 pass # Do nothing! The recurring cycle is officially finished.
             else:
-                # Otherwise, it's safe to clone the next month!
+                # Otherwise, it's safe to clone the next month
                 if next_due_date < date.today():
                     next_status = 'Overdue'
                 else:
@@ -121,7 +120,7 @@ def update_bill(request, bill_id, new_status):
                     status=next_status,
                     is_monthly=True,
                     category=bill.category,
-                    end_date=bill.end_date # <-- Make sure to pass the end date forward to the clone!
+                    end_date=bill.end_date # Carry over the same end date to the new bill
                 )
             # -------------------------------------
             
@@ -150,8 +149,7 @@ def edit_bill(request, bill_id):
         bill.due_date = request.POST.get('due', bill.due_date)
         bill.save()
         return redirect('bills')
-        
-    # If using a dedicated edit page. If using modals, you might just use POST.
+    
     return render(request, 'transactions/edit_bill.html', {'bill': bill})
 
 
@@ -174,7 +172,7 @@ def transaction_list(request):
     # 4. Calculate Net
     net = total_income - total_expense
 
-    # 5. Send it all to your HTML!
+    # 5. Send it all to HTML
     context = {
         'transactions': transactions,
         'total_income': total_income,
@@ -195,7 +193,6 @@ def add_transaction(request):
         # --- NEW: FOREIGN KEY LOOKUP ---
         cat_obj = None
         if txn_type == 'EXPENSE' and category_name:
-            # This magically finds the category, or creates it if it's the user's first time using it!
             cat_obj, created = Category.objects.get_or_create(
                 user=request.user,
                 category_name=category_name,
@@ -208,7 +205,7 @@ def add_transaction(request):
             description=desc,
             amount=amount,
             type=txn_type,
-            category=cat_obj, # Save the actual OBJECT here, not the string!
+            category=cat_obj,
             transaction_date=date.today()
         )
     return redirect('transaction_list')
@@ -250,7 +247,7 @@ def budget_view(request):
     # 2. BULLETPROOF FALLBACK: Query for any transaction that has NO category assigned
     uncategorized_spent = base_query.filter(category__isnull=True).aggregate(total=Sum('amount'))['total'] or 0
     
-    # 3. Add those orphans into the Miscellaneous bucket!
+    # 3. Add those orphans into the Miscellaneous bucket
     spent_data['Miscellaneous'] += uncategorized_spent 
 
     categories_info = []
@@ -285,7 +282,7 @@ def budget_view(request):
             elif cat_name == "Miscellaneous": suggestion = "Watch out for hidden costs."
             else: suggestion = "Monitor spending closely."
         else:
-            # CRITICAL WARNING: Find the single most expensive transaction in this category!
+            # CRITICAL WARNING: Find the single most expensive transaction in this category
             if cat_name == 'Miscellaneous':
                 # Catch both explicit "Miscellaneous" and uncategorized items
                 category_txns = base_query.filter(Q(category__category_name=cat_name) | Q(category__isnull=True))
