@@ -121,7 +121,7 @@ canvas{ max-height:260px; }
         display: none; /* Hides 'Smart Finance' so it doesn't look cluttered */
     }
 
-    /* 3. The Magic "Equally Spaced" Menu */
+    /* 3. Equally Spaced Menu */
     .menu {
         margin: 0;
         padding: 0;
@@ -144,7 +144,7 @@ canvas{ max-height:260px; }
         align-items: center;
     }
 
-    /* 4. SOLID TOP HEADER (Fixes the overlapping scroll!) */
+    /* 4. SOLID TOP HEADER */
     .sidebar-bottom {
         position: fixed;
         top: 0;
@@ -157,12 +157,11 @@ canvas{ max-height:260px; }
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between; /* <--- CHANGED: Pushes User to left, Logout to right */
+        justify-content: space-between;
         gap: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
     }
 
-    /* Fix the user info layout for the top right */
     .sidebar-user { 
         margin-bottom: 0; 
     }
@@ -173,7 +172,7 @@ canvas{ max-height:260px; }
         flex-shrink: 0; /* Prevents the circle from squishing */
     }
 
-    /* ADD THIS BLOCK: Forces long usernames to truncate safely! */
+    /* Forces long usernames to truncate safely */
     .sidebar-user span {
         max-width: 60px; /* Limits the name length */
         white-space: nowrap;
@@ -194,7 +193,7 @@ canvas{ max-height:260px; }
         width: 100%;
         height: 100vh;
         padding: 25px;
-        padding-top: 90px; /* Pushes the title down safely below the new solid top header */
+        padding-top: 90px; 
         padding-bottom: 85px; 
     }
 

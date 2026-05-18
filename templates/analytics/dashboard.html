@@ -112,10 +112,10 @@ small{ color:#8aa3bd; }
     .sidebar > div:first-child .logo {
         display: flex;
         position: fixed;
-        top: 20px; /* Aligns with the other topbar items */
+        top: 20px; 
         left: 50%;
-        transform: translateX(-50%); /* Perfectly dead-centers it */
-        z-index: 1060; /* Keeps it above the background */
+        transform: translateX(-50%);
+        z-index: 1060; 
     }
 
     .sidebar > div:first-child .logo h2 {
@@ -125,10 +125,10 @@ small{ color:#8aa3bd; }
     }
 
     .sidebar > div:first-child .logo span {
-        display: none; /* Hides 'Smart Finance' so it doesn't look cluttered */
+        display: none; /* Hide the tagline on mobile to save space */
     }
 
-    /* 3. The Magic "Equally Spaced" Menu */
+    /* 3. Equally Spaced Menu */
     .menu {
         margin: 0;
         padding: 0;
@@ -151,7 +151,7 @@ small{ color:#8aa3bd; }
         align-items: center;
     }
 
-    /* 4. SOLID TOP HEADER (Fixes the overlapping scroll!) */
+    /* 4. SOLID TOP HEADER */
     .sidebar-bottom {
         position: fixed;
         top: 0;
@@ -164,12 +164,11 @@ small{ color:#8aa3bd; }
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between; /* <--- CHANGED: Pushes User to left, Logout to right */
+        justify-content: space-between; 
         gap: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
     }
 
-    /* Fix the user info layout for the top right */
     .sidebar-user { 
         margin-bottom: 0; 
     }
@@ -180,7 +179,7 @@ small{ color:#8aa3bd; }
         flex-shrink: 0; /* Prevents the circle from squishing */
     }
 
-    /* ADD THIS BLOCK: Forces long usernames to truncate safely! */
+    /* ADD THIS BLOCK: Forces long usernames to truncate safely */
     .sidebar-user span {
         max-width: 60px; /* Limits the name length */
         white-space: nowrap;
