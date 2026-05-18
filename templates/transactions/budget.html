@@ -182,12 +182,14 @@ button{ padding:10px 14px; border:none; border-radius:8px; background:#00d2a0; c
 <div class="main">
 
 <div class="topbar">
-  <h2>Budget Tracker</h2>
+  <div>
+    <h2>Budget Tracker</h2>
+    <p style="color:#8aa3bd; font-size:13px; margin-top: 4px;">Set limits, monitor categories, and stay on target.</p>
+  </div>
 
-  <div style="display:flex;gap:10px;">
-    
+  <div style="display:flex; gap:10px; align-items: center;">
     <form id="monthForm" method="GET" action="{% url 'budget' %}">
-      <select id="monthFilter" onchange="window.location.href='?month=' + this.value" style="background:#0b2844; color:white; border:none; padding:8px 12px; border-radius:8px; outline:none; cursor:pointer; margin-right: 15px;">
+      <select id="monthFilter" onchange="window.location.href='?month=' + this.value" style="background:#0b2844; color:white; border:none; padding:8px 12px; border-radius:8px; outline:none; cursor:pointer;">
         <option value="all" {% if selected_month == 'all' %}selected{% endif %}>All Months</option>
         <option value="0" {% if selected_month == '0' %}selected{% endif %}>Jan</option>
         <option value="1" {% if selected_month == '1' %}selected{% endif %}>Feb</option>
