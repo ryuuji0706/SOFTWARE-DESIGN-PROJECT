@@ -84,10 +84,10 @@ small{ color:#8aa3bd; }
    📱 MOBILE RESPONSIVE DESIGN (Under 768px)
    ========================================= */
 @media (max-width: 768px) {
-    /* 1. Reset Body / Container Flex Layout */
+    /* 1. Reset Body Layout */
     body, .container {
         flex-direction: column;
-        display: block; /* Removes flex so main-content can take full width */
+        display: block;
     }
 
     /* 2. Transform Sidebar into Bottom App Navigation */
@@ -97,59 +97,110 @@ small{ color:#8aa3bd; }
         position: fixed;
         bottom: 0;
         left: 0;
-        padding: 10px 5px;
-        flex-direction: row;
+        padding: 8px 5px;
         z-index: 1000;
         border-top: 1px solid #102743;
-        overflow-x: auto; /* Allows scrolling if menu items overflow */
+        background: #041527;
+        display: block;
     }
 
-    /* Hide the logo and user profile on mobile to save space for the menu */
-    .sidebar > div:first-child .logo,
-    .sidebar-bottom {
-        display: none;
+    .sidebar > div:first-child {
+        width: 100%;
     }
 
-    /* Align the menu items horizontally */
+    /* Teleport the Logo to the center of the top header */
+    .sidebar > div:first-child .logo {
+        display: flex;
+        position: fixed;
+        top: 20px; /* Aligns with the other topbar items */
+        left: 50%;
+        transform: translateX(-50%); /* Perfectly dead-centers it */
+        z-index: 1060; /* Keeps it above the background */
+    }
+
+    .sidebar > div:first-child .logo h2 {
+        font-size: 20px; /* Slightly smaller for the mobile top bar */
+        margin: 0;
+        line-height: 1;
+    }
+
+    .sidebar > div:first-child .logo span {
+        display: none; /* Hides 'Smart Finance' so it doesn't look cluttered */
+    }
+
+    /* 3. The Magic "Equally Spaced" Menu */
     .menu {
-        margin-top: 0;
+        margin: 0;
+        padding: 0;
         display: flex;
         flex-direction: row;
         width: 100%;
         justify-content: space-between;
-        gap: 5px;
+        gap: 2px;
     }
 
     .menu li {
-        padding: 10px;
+        flex: 1;
+        padding: 12px 2px;
         margin-bottom: 0;
-        font-size: 13px;
+        font-size: 10px;
         text-align: center;
         border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    /* 3. Adjust Main Content Area */
+    /* 4. SOLID TOP HEADER (Fixes the overlapping scroll!) */
+    .sidebar-bottom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px 20px;
+        background: #081d33; 
+        border-top: none;
+        z-index: 1050;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between; /* <--- CHANGED: Pushes User to left, Logout to right */
+        gap: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    }
+
+    .sidebar-user { margin-bottom: 0; }
+    .user-circle { width: 32px; height: 32px; }
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        width: auto;
+        margin: 0;
+    }
+
+    /* 5. Adjust Main Content Area */
     .main-content, .main {
         width: 100%;
         height: 100vh;
-        padding: 15px;
-        padding-bottom: 85px; /* Adds space so the bottom nav doesn't cover your text */
+        padding: 25px;
+        padding-top: 90px; /* Pushes the title down safely below the new solid top header */
+        padding-bottom: 85px; 
     }
 
-    /* 4. Stack Topbar Elements */
     .topbar {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 5px;
+        margin-bottom: 15px;
+        padding-right: 0; 
     }
 
-    /* 5. Force Grids to Stack Vertically */
+    /* 6. Force Grids to Stack Vertically */
     .cards, .content-grid, .grid, .insight-grid {
-        grid-template-columns: 1fr; /* Changes 3/4/5 columns into 1 single column */
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
-    /* 6. Adjust Panel Headers for smaller screens */
     .panel-header {
         flex-direction: column;
         gap: 10px;
