@@ -121,8 +121,26 @@ button{ flex: 1; border:none; padding:12px; border-radius:8px; cursor:pointer; f
         box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
     }
 
-    .sidebar-user { margin-bottom: 0; }
-    .user-circle { width: 32px; height: 32px; }
+    /* Fix the user info layout for the top right */
+    .sidebar-user { 
+        margin-bottom: 0; 
+    }
+    
+    .user-circle { 
+        width: 32px; 
+        height: 32px; 
+        flex-shrink: 0; /* Prevents the circle from squishing */
+    }
+
+    /* ADD THIS BLOCK: Forces long usernames to truncate safely! */
+    .sidebar-user span {
+        max-width: 60px; /* Limits the name length */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block; /* Required for max-width to work on a span */
+    }
+    
     .logout-btn {
         padding: 6px 12px;
         font-size: 12px;
