@@ -87,6 +87,83 @@ button{ border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-
 .Unpaid{ color:#ffb020; font-weight:600; }
 .Overdue{ color:#ff5c5c; font-weight:600; }
 form { display: inline; }
+
+/* =========================================
+   📱 MOBILE RESPONSIVE DESIGN (Under 768px)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. Reset Body / Container Flex Layout */
+    body, .container {
+        flex-direction: column;
+        display: block; /* Removes flex so main-content can take full width */
+    }
+
+    /* 2. Transform Sidebar into Bottom App Navigation */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        padding: 10px 5px;
+        flex-direction: row;
+        z-index: 1000;
+        border-top: 1px solid #102743;
+        overflow-x: auto; /* Allows scrolling if menu items overflow */
+    }
+
+    /* Hide the logo and user profile on mobile to save space for the menu */
+    .sidebar > div:first-child .logo,
+    .sidebar-bottom {
+        display: none;
+    }
+
+    /* Align the menu items horizontally */
+    .menu {
+        margin-top: 0;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+        gap: 5px;
+    }
+
+    .menu li {
+        padding: 10px;
+        margin-bottom: 0;
+        font-size: 13px;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    /* 3. Adjust Main Content Area */
+    .main-content, .main {
+        width: 100%;
+        height: 100vh;
+        padding: 15px;
+        padding-bottom: 85px; /* Adds space so the bottom nav doesn't cover your text */
+    }
+
+    /* 4. Stack Topbar Elements */
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    /* 5. Force Grids to Stack Vertically */
+    .cards, .content-grid, .grid, .insight-grid {
+        grid-template-columns: 1fr; /* Changes 3/4/5 columns into 1 single column */
+        gap: 15px;
+    }
+
+    /* 6. Adjust Panel Headers for smaller screens */
+    .panel-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
 </style>
 </head>
 
